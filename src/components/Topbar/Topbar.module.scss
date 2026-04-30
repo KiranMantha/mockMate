@@ -1,0 +1,82 @@
+@use '@/styles/variables' as *;
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid $border;
+  background: $panel;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.left {
+  min-width: 0;
+  flex: 1;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 700;
+  @include truncate;
+}
+
+.sub {
+  font-size: 10.5px;
+  color: $t2;
+  font-family: $mono;
+  margin-top: 2px;
+  @include truncate;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ruleToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $r;
+  transition: all 0.15s;
+  user-select: none;
+
+  &.on {
+    border-color: rgba($accent, 0.4);
+    background: rgba($accent, 0.06);
+
+    .toggleLabel {
+      color: $accent;
+    }
+  }
+}
+
+.toggleLabel {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: $t3;
+  transition: color 0.15s;
+}
+
+.btnDelete {
+  background: transparent;
+  color: $red;
+  border: 1px solid rgba($red, 0.3);
+  padding: 7px 13px;
+  border-radius: $r;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: rgba($red, 0.08);
+  }
+}

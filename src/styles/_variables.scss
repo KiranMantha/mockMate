@@ -1,0 +1,58 @@
+// Colors
+$bg: #0c0e14;
+$sidebar: #0f1118;
+$panel: #13161f;
+$surface: #1a1e2a;
+$surface2: #21263a;
+$border: #252b3d;
+$border2: #1d2130;
+
+$accent: #6ee7b7;
+$indigo: #818cf8;
+$orange: #fb923c;
+$red: #f87171;
+$yellow: #fbbf24;
+
+$t1: #dde3f0;
+$t2: #7c869e;
+$t3: #3d4460;
+
+// Typography
+$mono: 'JetBrains Mono', monospace;
+$sans: 'Inter', sans-serif;
+
+// Spacing / radius
+$r: 8px;
+$sidebar-w: 300px;
+
+// Mixins
+@mixin focus-ring {
+  &:focus {
+    outline: none;
+    border-color: $indigo;
+    box-shadow: 0 0 0 3px rgba($indigo, 0.1);
+  }
+}
+
+@mixin scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: $border transparent;
+
+  &::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $border;
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@mixin truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

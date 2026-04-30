@@ -1,0 +1,60 @@
+@use '@/styles/variables' as *;
+
+.pill {
+  position: relative;
+  width: 38px;
+  height: 21px;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: inline-block;
+
+  input {
+    display: none;
+
+    &:checked ~ .track {
+      background: rgba($accent, 0.15);
+      border-color: $accent;
+
+      &::before {
+        transform: translateX(17px);
+        background: $accent;
+      }
+    }
+  }
+}
+
+.track {
+  position: absolute;
+  inset: 0;
+  background: $surface2;
+  border: 1px solid $border;
+  border-radius: 21px;
+  transition: all 0.2s;
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background: $t3;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: all 0.2s;
+  }
+}
+
+.small {
+  width: 28px;
+  height: 16px;
+
+  input:checked ~ .track::before {
+    transform: translateX(12px);
+  }
+
+  .track::before {
+    width: 10px;
+    height: 10px;
+  }
+}
