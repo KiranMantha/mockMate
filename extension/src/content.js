@@ -7,7 +7,7 @@
  * Once rules arrive, queued requests are flushed.
  */
 (function () {
-  "use strict";
+  'use strict';
 
   let _rules = [];
   let _enabled = true;
@@ -17,10 +17,8 @@
   // ── URL matching ──────────────────────────────────────────────────────────────
   function urlMatches(pattern, url) {
     try {
-      const re = pattern
-        .replace(/[.+^${}()|[\]\\]/g, "\\$&")
-        .replace(/\*/g, ".*");
-      return new RegExp(re, "i").test(url);
+      const re = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+      return new RegExp(re, 'i').test(url);
     } catch {
       return url.toLowerCase().includes(pattern.toLowerCase());
     }
@@ -38,30 +36,25 @@
 
   function extractGQL(body) {
     try {
-      const p = typeof body === "string" ? JSON.parse(body) : body;
-      if (p && p.query)
-        return {
-          operationName: p.operationName || null,
-          query: p.query,
-          variables: p.variables || {},
-        };
+      const p = typeof body === 'string' ? JSON.parse(body) : body;
+      if (p && p.query) return { operationName: p.operationName || null, query: p.query, variables: p.variables || {} };
     } catch {}
     return null;
   }
 
   const STATUS_TEXT = {
-    200: "OK",
-    201: "Created",
-    204: "No Content",
-    400: "Bad Request",
-    401: "Unauthorized",
-    403: "Forbidden",
-    404: "Not Found",
-    422: "Unprocessable Entity",
-    429: "Too Many Requests",
-    500: "Internal Server Error",
-    502: "Bad Gateway",
-    503: "Service Unavailable",
+    200: 'OK',
+    201: 'Created',
+    204: 'No Content',
+    400: 'Bad Request',
+    401: 'Unauthorized',
+    403: 'Forbidden',
+    404: 'Not Found',
+    422: 'Unprocessable Entity',
+    429: 'Too Many Requests',
+    500: 'Internal Server Error',
+    502: 'Bad Gateway',
+    503: 'Service Unavailable'
   };
 
   // ── Rule matching ─────────────────────────────────────────────────────────────
@@ -69,11 +62,11 @@
     if (!_enabled) return null;
     for (const rule of _rules) {
       if (!rule.enabled) continue;
-      if (!rule.urlPattern || !rule.urlPattern.trim()) continue;
+      if (!rule.urlPattern || !rule.urlPattern.trim()) continue; // skip incomplete rules
       if (!urlMatches(rule.urlPattern, url)) continue;
-      const m = (rule.method || "*").toUpperCase();
-      if (m !== "*" && m !== method.toUpperCase()) continue;
-      if (rule.type === "graphql") {
+      const m = (rule.method || '*').toUpperCase();
+      if (m !== '*' && m !== method.toUpperCase()) continue;
+      if (rule.type === 'graphql') {
         const gql = extractGQL(bodyRaw);
         if (!gql) continue;
         if (rule.graphqlOperation) {
@@ -93,19 +86,19 @@
 
   // ── Build response body ───────────────────────────────────────────────────────
   function buildBody(rule, ctx) {
-    if (rule.responseType === "dynamic") {
+    // Dynamic code always takes precedence if present, regardless of responseType
+    const hasDynamic = rule.dynamicCode && rule.dynamicCode.trim();
+    if (rule.responseType === 'dynamic' || hasDynamic) {
       try {
         // eslint-disable-next-line no-new-func
-        const result = new Function("request", rule.dynamicCode)(ctx);
-        return typeof result === "string"
-          ? result
-          : JSON.stringify(result, null, 2);
+        const result = new Function('request', rule.dynamicCode)(ctx);
+        return typeof result === 'string' ? result : JSON.stringify(result, null, 2);
       } catch (e) {
-        console.error("[MockMate] dynamic error:", e);
+        console.error('[MockMate] dynamic error:', e);
         return JSON.stringify({ __mockmate_error__: e.message });
       }
     }
-    return rule.responseBody || "{}";
+    return rule.responseBody || '{}';
   }
 
   // ── Execute fetch (mock or real) ──────────────────────────────────────────────
@@ -115,57 +108,29 @@
     const rule = findRule(url, method, bodyRaw);
     if (!rule) return _realFetch(input, init);
 
-    const status = parseInt(rule.statusCode || "200", 10);
-    const headers = Object.assign(
-      { "Content-Type": "application/json" },
-      rule.headers || {},
-    );
-    const ctx = {
-      url,
-      method,
-      body: parseBody(bodyRaw),
-      headers: {},
-      graphql: extractGQL(bodyRaw),
-    };
+    const status = parseInt(rule.statusCode || '200', 10);
+    const headers = Object.assign({ 'Content-Type': 'application/json' }, rule.headers || {});
+    const ctx = { url, method, body: parseBody(bodyRaw), headers: {}, graphql: extractGQL(bodyRaw) };
     const body = buildBody(rule, ctx);
-    const delay = parseInt(rule.delay || "0", 10);
+    const delay = parseInt(rule.delay || '0', 10);
 
     console.info(`[MockMate] 🎭 fetch → ${status}`, url);
     const respond = () =>
-      new Response(body, {
-        status,
-        statusText: STATUS_TEXT[status] || "OK",
-        headers: new Headers(headers),
-      });
-    return delay > 0
-      ? new Promise((r) => setTimeout(() => r(respond()), delay))
-      : Promise.resolve(respond());
+      new Response(body, { status, statusText: STATUS_TEXT[status] || 'OK', headers: new Headers(headers) });
+    return delay > 0 ? new Promise((r) => setTimeout(() => r(respond()), delay)) : Promise.resolve(respond());
   }
 
   // ── fetch override ────────────────────────────────────────────────────────────
   window.fetch = function (input, init) {
     init = init || {};
-    const url =
-      typeof input === "string"
-        ? input
-        : input instanceof URL
-          ? input.href
-          : input.url;
-    const method = (
-      init.method ||
-      (input instanceof Request && input.method) ||
-      "GET"
-    ).toUpperCase();
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    const method = (init.method || (input instanceof Request && input.method) || 'GET').toUpperCase();
     const bodyRaw = init.body || null;
 
     if (!_ready) {
       return new Promise((resolve, reject) => {
-        _queue.push({
-          resolve,
-          reject,
-          run: () => runFetch(input, init, bodyRaw, url, method),
-        });
-        console.debug("[MockMate] queued:", method, url);
+        _queue.push({ resolve, reject, run: () => runFetch(input, init, bodyRaw, url, method) });
+        console.debug('[MockMate] queued:', method, url);
       });
     }
     return runFetch(input, init, bodyRaw, url, method);
@@ -175,8 +140,8 @@
   const _RealXHR = window.XMLHttpRequest;
   window.XMLHttpRequest = function () {
     const xhr = new _RealXHR();
-    let _m = "GET",
-      _u = "";
+    let _m = 'GET',
+      _u = '';
 
     const _open = xhr.open.bind(xhr);
     xhr.open = function (method, url, ...rest) {
@@ -191,51 +156,27 @@
         const rule = findRule(_u, _m, bodyRaw);
         if (!rule) return _send(bodyRaw);
 
-        const status = parseInt(rule.statusCode || "200", 10);
-        const headers = Object.assign(
-          { "Content-Type": "application/json" },
-          rule.headers || {},
-        );
-        const ctx = {
-          url: _u,
-          method: _m,
-          body: parseBody(bodyRaw),
-          headers: {},
-          graphql: extractGQL(bodyRaw),
-        };
+        const status = parseInt(rule.statusCode || '200', 10);
+        const headers = Object.assign({ 'Content-Type': 'application/json' }, rule.headers || {});
+        const ctx = { url: _u, method: _m, body: parseBody(bodyRaw), headers: {}, graphql: extractGQL(bodyRaw) };
         const body = buildBody(rule, ctx);
-        const delay = parseInt(rule.delay || "0", 10);
+        const delay = parseInt(rule.delay || '0', 10);
         console.info(`[MockMate] 🎭 XHR → ${status}`, _u);
 
         setTimeout(() => {
-          Object.defineProperty(xhr, "readyState", {
-            get: () => 4,
-            configurable: true,
-          });
-          Object.defineProperty(xhr, "status", {
-            get: () => status,
-            configurable: true,
-          });
-          Object.defineProperty(xhr, "statusText", {
-            get: () => STATUS_TEXT[status] || "OK",
-            configurable: true,
-          });
-          Object.defineProperty(xhr, "responseText", {
-            get: () => body,
-            configurable: true,
-          });
-          Object.defineProperty(xhr, "response", {
-            get: () => body,
-            configurable: true,
-          });
+          Object.defineProperty(xhr, 'readyState', { get: () => 4, configurable: true });
+          Object.defineProperty(xhr, 'status', { get: () => status, configurable: true });
+          Object.defineProperty(xhr, 'statusText', { get: () => STATUS_TEXT[status] || 'OK', configurable: true });
+          Object.defineProperty(xhr, 'responseText', { get: () => body, configurable: true });
+          Object.defineProperty(xhr, 'response', { get: () => body, configurable: true });
           xhr.getAllResponseHeaders = () =>
             Object.entries(headers)
               .map(([k, v]) => `${k}: ${v}`)
-              .join("\r\n");
+              .join('\r\n');
           xhr.getResponseHeader = (k) => headers[k] ?? null;
-          ["readystatechange", "load", "loadend"].forEach((t) => {
+          ['readystatechange', 'load', 'loadend'].forEach((t) => {
             xhr.dispatchEvent(new Event(t));
-            if (typeof xhr["on" + t] === "function") xhr["on" + t].call(xhr);
+            if (typeof xhr['on' + t] === 'function') xhr['on' + t].call(xhr);
           });
         }, delay);
       };
@@ -250,23 +191,21 @@
   };
 
   // ── Receive rules from bridge via postMessage ─────────────────────────────────
-  window.addEventListener("message", (e) => {
+  window.addEventListener('message', (e) => {
     // Only accept messages from our bridge (same window, our marker)
     if (!e.data || !e.data.__mockmate__) return;
 
     const { type, payload } = e.data;
-    if (type === "INIT" || type === "UPDATE") {
+    if (type === 'INIT' || type === 'UPDATE') {
       _rules = payload.rules ?? _rules;
       _enabled = payload.enabled ?? _enabled;
-      console.debug(
-        `[MockMate] ${type}: ${_rules.length} rules, enabled: ${_enabled}`,
-      );
+      console.debug(`[MockMate] ${type}: ${_rules.length} rules, enabled: ${_enabled}`);
     }
 
     if (!_ready) {
       _ready = true;
       const q = _queue.splice(0);
-      console.debug("[MockMate] flushing", q.length, "queued request(s)");
+      console.debug('[MockMate] flushing', q.length, 'queued request(s)');
       for (const { resolve, reject, run } of q) {
         try {
           Promise.resolve(run()).then(resolve).catch(reject);
@@ -280,7 +219,7 @@
   // Safety valve — if bridge never responds, unblock after 500ms
   setTimeout(() => {
     if (!_ready) {
-      console.warn("[MockMate] bridge timeout — releasing queue with no rules");
+      console.warn('[MockMate] bridge timeout — releasing queue with no rules');
       _ready = true;
       const q = _queue.splice(0);
       for (const { resolve, reject, run } of q) {
@@ -293,7 +232,5 @@
     }
   }, 500);
 
-  console.debug(
-    "[MockMate] interceptor installed, awaiting rules from bridge...",
-  );
+  console.debug('[MockMate] interceptor installed, awaiting rules from bridge...');
 })();

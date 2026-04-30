@@ -1,0 +1,81 @@
+@use '@/styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+
+  &.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+}
+
+.box {
+  background: $panel;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 22px;
+  width: 300px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+  h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  p {
+    font-size: 12px;
+    color: $t2;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.btnCancel {
+  background: transparent;
+  color: $t2;
+  border: 1px solid $border;
+  padding: 7px 13px;
+  border-radius: $r;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: $surface;
+    color: $t1;
+  }
+}
+
+.btnDelete {
+  background: transparent;
+  color: $red;
+  border: 1px solid rgba($red, 0.3);
+  padding: 7px 13px;
+  border-radius: $r;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: rgba($red, 0.08);
+  }
+}

@@ -1,0 +1,14 @@
+@use '@/styles/variables' as *;
+
+.app {
+  display: grid;
+  grid-template-columns: $sidebar-w 1fr;
+  height: 100vh;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}

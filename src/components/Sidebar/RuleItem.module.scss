@@ -1,0 +1,116 @@
+@use '@/styles/variables' as *;
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: $r;
+  cursor: pointer;
+  border: 1px solid transparent;
+  margin-bottom: 2px;
+  transition: all 0.12s;
+  position: relative;
+
+  &:hover {
+    background: $panel;
+    border-color: $border2;
+
+    .delBtn {
+      opacity: 1;
+    }
+  }
+
+  &.active {
+    background: $surface;
+    border-color: $border;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 20%;
+      bottom: 20%;
+      width: 2px;
+      background: $accent;
+      border-radius: 2px;
+    }
+  }
+
+  &.dim {
+    opacity: 0.4;
+  }
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-size: 12.5px;
+  font-weight: 600;
+  @include truncate;
+}
+
+.url {
+  font-family: $mono;
+  font-size: 10px;
+  color: $t2;
+  margin-top: 2px;
+  @include truncate;
+}
+
+.tags {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.tag {
+  font-family: $mono;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+
+  &.rest {
+    background: rgba($indigo, 0.12);
+    color: $indigo;
+    border: 1px solid rgba($indigo, 0.25);
+  }
+
+  &.gql {
+    background: rgba($orange, 0.12);
+    color: $orange;
+    border: 1px solid rgba($orange, 0.25);
+  }
+
+  &.js {
+    background: rgba($accent, 0.08);
+    color: $accent;
+    border: 1px solid rgba($accent, 0.2);
+  }
+}
+
+.delBtn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: $t3;
+  opacity: 0;
+  transition: all 0.12s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba($red, 0.1);
+    color: $red;
+  }
+}

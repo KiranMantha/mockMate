@@ -1,0 +1,70 @@
+@use 'variables' as *;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  background: $bg;
+  color: $t1;
+  font-family: $sans;
+  font-size: 13px;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  height: 100%;
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+input[type='text'],
+select,
+textarea {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $r;
+  padding: 8px 11px;
+  color: $t1;
+  font-family: $mono;
+  font-size: 12px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+
+  @include focus-ring;
+
+  &::placeholder {
+    color: $t3;
+  }
+}
+
+select {
+  cursor: pointer;
+
+  option {
+    background: $surface;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
