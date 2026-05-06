@@ -90,8 +90,26 @@
     const hasDynamic = rule.dynamicCode && rule.dynamicCode.trim();
     if (rule.responseType === 'dynamic' || hasDynamic) {
       try {
+        // Build the args object matching the modifyResponse(args) signature
+        const staticBody = rule.responseBody || '{}';
+        let responseJSON = null;
+        try {
+          responseJSON = JSON.parse(staticBody);
+        } catch (_) {}
+
+        const args = {
+          method: ctx.method,
+          url: ctx.url,
+          response: staticBody,
+          responseType: 'json',
+          requestHeaders: ctx.headers || {},
+          requestData: ctx.body,
+          responseJSON
+        };
+
         // eslint-disable-next-line no-new-func
-        const result = new Function('request', rule.dynamicCode)(ctx);
+        const fn = new Function('args', rule.dynamicCode + '\n; return modifyResponse(args);');
+        const result = fn(args);
         return typeof result === 'string' ? result : JSON.stringify(result, null, 2);
       } catch (e) {
         console.error('[MockMate] dynamic error:', e);

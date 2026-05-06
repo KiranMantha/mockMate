@@ -4,39 +4,205 @@ import type { HttpMethod, MockRule, ResponseType } from '@types';
 import { useEffect } from 'preact/hooks';
 import styles from './Editor.module.scss';
 
+const DEFAULT_TEMPLATE = [
+  'function modifyResponse(args) {',
+  '  const { method, url, response, responseType, requestHeaders, requestData, responseJSON } = args;',
+  '  // Modify and return the response based on request attributes',
+  '',
+  '  return response;',
+  '}'
+].join('\n');
+
 const SNIPPETS: [string, string][] = [
-  ['Echo body', 'const { url, method, body } = request;\nreturn { echoed: body, url, method, ts: Date.now() };'],
-  ['Random ID', 'return { id: Math.random().toString(36).slice(2), ts: new Date().toISOString() };'],
+  [
+    'Echo args',
+    [
+      'function modifyResponse(args) {',
+      '  const { method, url, requestData, responseJSON } = args;',
+      '  console.log("method:", method, "url:", url);',
+      '  return { echoed: requestData, url, method, ts: Date.now() };',
+      '}'
+    ].join('\n')
+  ],
+  [
+    'Random ID',
+    [
+      'function modifyResponse(args) {',
+      '  return { id: Math.random().toString(36).slice(2), ts: new Date().toISOString() };',
+      '}'
+    ].join('\n')
+  ],
+  [
+    'Modify JSON',
+    [
+      'function modifyResponse(args) {',
+      '  const { responseJSON } = args;',
+      '  // Mutate the parsed response and return it',
+      '  if (Array.isArray(responseJSON)) {',
+      '    return responseJSON.slice(0, 1);',
+      '  }',
+      '  return { ...responseJSON, __mocked: true };',
+      '}'
+    ].join('\n')
+  ],
   [
     'GQL response',
-    "const { graphql } = request;\nreturn { data: { [graphql?.operationName || 'result']: { id: 1, ok: true } } };"
+    [
+      'function modifyResponse(args) {',
+      "  const operationName = args.requestData?.operationName || 'result';",
+      '  return { data: { [operationName]: { id: 1, ok: true } } };',
+      '}'
+    ].join('\n')
   ],
   [
     'Paginated',
-    'const page = request.body?.page || 1, size = 10;\nreturn { items: Array.from({length:size},(_,i)=>({id:(page-1)*size+i+1})), total:100, page };'
+    [
+      'function modifyResponse(args) {',
+      '  const page = args.requestData?.page || 1;',
+      '  const size = 10;',
+      '  return {',
+      '    items: Array.from({ length: size }, (_, i) => ({ id: (page - 1) * size + i + 1 })),',
+      '    total: 100,',
+      '    page',
+      '  };',
+      '}'
+    ].join('\n')
   ],
-  ['Error body', "return { error: 'Not found', code: 'NOT_FOUND' };"]
+  [
+    'Error body',
+    ['function modifyResponse(args) {', "  return { error: 'Not found', code: 'NOT_FOUND' };", '}'].join('\n')
+  ]
 ];
 
+// Mock args object used when running the script live in the editor —
+// mirrors the shape passed to modifyResponse(args) at runtime
+const MOCK_ARGS = {
+  method: 'GET',
+  url: 'https://api.example.com/mock',
+  response: '[{"id":1,"name":"Mock User"}]',
+  responseType: 'json',
+  requestHeaders: { 'content-type': 'application/json' },
+  requestData: null,
+  responseJSON: [{ id: 1, name: 'Mock User' }]
+};
+
+type LogLevel = 'log' | 'warn' | 'error' | 'info';
+
+interface LogEntry {
+  level: LogLevel;
+  args: string;
+}
+
+interface RunResult {
+  returnValue: string | null;
+  logs: LogEntry[];
+  error: string | null;
+}
+
+// Runs the dynamic code with a sandboxed console, returns logs + return value
+function runDynamic(code: string): RunResult {
+  const logs: LogEntry[] = [];
+
+  const sandboxedConsole = (['log', 'warn', 'error', 'info'] as LogLevel[]).reduce(
+    (acc, level) => {
+      acc[level] = (...args: unknown[]) => {
+        logs.push({
+          level,
+          args: args.map((a) => (typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a))).join(' ')
+        });
+      };
+      return acc;
+    },
+    {} as Record<LogLevel, (...args: unknown[]) => void>
+  );
+
+  try {
+    // Wrap the user code so modifyResponse is defined, then call it with MOCK_ARGS
+    // eslint-disable-next-line no-new-func
+    const fn = new Function('args', 'console', code + '\n; return modifyResponse(args);');
+    const result = fn(MOCK_ARGS, sandboxedConsole);
+    return {
+      returnValue: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
+      logs,
+      error: null
+    };
+  } catch (e: any) {
+    return { returnValue: null, logs, error: e.message };
+  }
+}
+
+// ── ConsolePreview component ──────────────────────────────────────────────────
+interface ConsolePreviewProps {
+  result: RunResult;
+}
+
+function ConsolePreview({ result }: ConsolePreviewProps) {
+  const hasLogs = result.logs.length > 0;
+  const hasReturn = result.returnValue !== null;
+  const hasError = result.error !== null;
+  const isEmpty = !hasLogs && !hasReturn && !hasError;
+
+  return (
+    <div class={styles.consoleWrap}>
+      <div class={styles.consoleHeader}>
+        <span>Console</span>
+        {hasError && <span class={styles.consoleBadgeErr}>Error</span>}
+        {!hasError && hasLogs && <span class={styles.consoleBadge}>{result.logs.length}</span>}
+      </div>
+      <div class={styles.consoleBody}>
+        {isEmpty && <span class={styles.consoleMuted}>No output — add console.log() calls to see them here</span>}
+
+        {result.logs.map((entry, i) => (
+          <div key={i} class={`${styles.consoleLine} ${styles[`console_${entry.level}`]}`}>
+            <span class={styles.consoleLevel}>{entry.level}</span>
+            <span class={styles.consoleArgs}>{entry.args}</span>
+          </div>
+        ))}
+
+        {hasError && (
+          <div class={`${styles.consoleLine} ${styles.console_error}`}>
+            <span class={styles.consoleLevel}>error</span>
+            <span class={styles.consoleArgs}>{result.error}</span>
+          </div>
+        )}
+
+        {hasReturn && !hasError && (
+          <div class={styles.consoleReturn}>
+            <span class={styles.consoleReturnLabel}>↩ return</span>
+            <span class={styles.consoleReturnValue}>{result.returnValue}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Editor ────────────────────────────────────────────────────────────────────
 interface Props {
   rule: MockRule;
   onSave: (updated: MockRule) => void;
 }
 
 export function Editor({ rule, onSave }: Props) {
-  // Local form state — decoupled from store until Save
   const form = useSignal<MockRule>({ ...rule });
   const activeTab = useSignal<ResponseType>(rule.responseType ?? 'static');
   const dirty = useSignal(false);
 
-  // Re-sync when a different rule is selected
+  // Live console output — re-computed every time dynamic code changes
+  const consoleResult = useSignal<RunResult>({ returnValue: null, logs: [], error: null });
+
   useEffect(() => {
     form.value = { ...rule };
     activeTab.value = rule.responseType ?? 'static';
     dirty.value = false;
+    // Run once on load if dynamic
+    if ((rule.responseType === 'dynamic' || rule.dynamicCode?.trim()) && rule.dynamicCode?.trim()) {
+      consoleResult.value = runDynamic(rule.dynamicCode);
+    } else {
+      consoleResult.value = { returnValue: null, logs: [], error: null };
+    }
   }, [rule.id]);
 
-  // Cmd/Ctrl+S
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
@@ -51,10 +217,14 @@ export function Editor({ rule, onSave }: Props) {
   const set = (patch: Partial<MockRule>) => {
     form.value = { ...form.value, ...patch };
     dirty.value = true;
+    // Re-run dynamic code live whenever it changes
+    if ('dynamicCode' in patch) {
+      const code = (patch.dynamicCode ?? '').trim();
+      consoleResult.value = code ? runDynamic(code) : { returnValue: null, logs: [], error: null };
+    }
   };
 
   const isGQL = form.value.type === 'graphql';
-  // FIX 2: dynamic code present → always wins at runtime; show warning on static tab
   const hasDynamic = (form.value.dynamicCode ?? '').trim().length > 0;
   const dynamicOverride = activeTab.value === 'static' && hasDynamic;
 
@@ -135,7 +305,6 @@ export function Editor({ rule, onSave }: Props) {
                     value={form.value.type}
                     onChange={(e) => {
                       const type = (e.target as HTMLSelectElement).value as MockRule['type'];
-                      // FIX 1: switching to GQL auto-locks method to POST
                       set({ type, method: type === 'graphql' ? 'POST' : '*' });
                     }}
                   >
@@ -211,6 +380,11 @@ export function Editor({ rule, onSave }: Props) {
                     onClick={() => {
                       activeTab.value = 'dynamic';
                       dirty.value = true;
+                      // Seed the default template if the textarea is empty
+                      if (!form.value.dynamicCode?.trim()) {
+                        form.value = { ...form.value, dynamicCode: DEFAULT_TEMPLATE };
+                        consoleResult.value = runDynamic(DEFAULT_TEMPLATE);
+                      }
                     }}
                   >
                     ⚡ Dynamic JS
@@ -218,13 +392,13 @@ export function Editor({ rule, onSave }: Props) {
                 </div>
               </div>
 
-              {/* FIX 2: warn when dynamic code will override static */}
               {dynamicOverride && (
                 <div class={styles.note}>
                   ⚡ Dynamic JS code is present — it will take precedence over the static JSON body at runtime.
                 </div>
               )}
 
+              {/* Static panel */}
               {activeTab.value === 'static' && (
                 <div>
                   <div class={styles.field}>
@@ -247,6 +421,7 @@ export function Editor({ rule, onSave }: Props) {
                 </div>
               )}
 
+              {/* Dynamic panel */}
               {activeTab.value === 'dynamic' && (
                 <div class={styles.field}>
                   <label>JavaScript — function body</label>
@@ -256,9 +431,7 @@ export function Editor({ rule, onSave }: Props) {
                       class={`${styles.code} ${styles.codeLg}`}
                       rows={10}
                       value={form.value.dynamicCode}
-                      placeholder={
-                        '// request = { url, method, body, headers, graphql }\nreturn { success: true, ts: Date.now() };'
-                      }
+                      placeholder=""
                       onInput={(e) => set({ dynamicCode: (e.target as HTMLTextAreaElement).value })}
                     />
                   </div>
@@ -269,9 +442,14 @@ export function Editor({ rule, onSave }: Props) {
                       </button>
                     ))}
                   </div>
-                  <div class={styles.hint}>
-                    Receives <code>request</code> object. Return value becomes the response body.
+                  <div class={styles.hint} style="margin-bottom: 10px">
+                    <code>args</code> contains: <code>method</code>, <code>url</code>, <code>response</code>,{' '}
+                    <code>responseType</code>, <code>requestHeaders</code>, <code>requestData</code>,{' '}
+                    <code>responseJSON</code>. Script runs live — console output appears below.
                   </div>
+
+                  {/* Console output — same position as static preview */}
+                  <ConsolePreview result={consoleResult.value} />
                 </div>
               )}
             </div>
