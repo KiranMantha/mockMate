@@ -225,8 +225,6 @@ export function Editor({ rule, onSave }: Props) {
   };
 
   const isGQL = form.value.type === 'graphql';
-  const hasDynamic = (form.value.dynamicCode ?? '').trim().length > 0;
-  const dynamicOverride = activeTab.value === 'static' && hasDynamic;
 
   function handleSave() {
     if (!form.value.name.trim()) return showToast('⚠️ Name is required');
@@ -391,12 +389,6 @@ export function Editor({ rule, onSave }: Props) {
                   </button>
                 </div>
               </div>
-
-              {dynamicOverride && (
-                <div class={styles.note}>
-                  ⚡ Dynamic JS code is present — it will take precedence over the static JSON body at runtime.
-                </div>
-              )}
 
               {/* Static panel */}
               {activeTab.value === 'static' && (

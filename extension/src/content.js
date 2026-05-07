@@ -2,8 +2,7 @@
  * content.js — MAIN world, document_start
  *
  * Overrides fetch + XHR immediately and queues all requests.
- * Receives rules from bridge.js (ISOLATED world) via window.postMessage,
- * which correctly crosses the MAIN/ISOLATED world boundary.
+ * Receives rules from bridge.js (ISOLATED world) via window.postMessage.
  * Once rules arrive, queued requests are flushed.
  */
 (function () {
@@ -62,7 +61,7 @@
     if (!_enabled) return null;
     for (const rule of _rules) {
       if (!rule.enabled) continue;
-      if (!rule.urlPattern || !rule.urlPattern.trim()) continue; // skip incomplete rules
+      if (!rule.urlPattern || !rule.urlPattern.trim()) continue;
       if (!urlMatches(rule.urlPattern, url)) continue;
       const m = (rule.method || '*').toUpperCase();
       if (m !== '*' && m !== method.toUpperCase()) continue;
@@ -78,19 +77,20 @@
             continue;
         }
       }
-      console.info(`[MockMate] ✅ matched: "${rule.name}" → ${method} ${url}`);
       return rule;
     }
     return null;
   }
 
   // ── Build response body ───────────────────────────────────────────────────────
+  // Strictly respects rule.responseType — no implicit fallback to dynamic.
   function buildBody(rule, ctx) {
-    // Dynamic code always takes precedence if present, regardless of responseType
-    const hasDynamic = rule.dynamicCode && rule.dynamicCode.trim();
-    if (rule.responseType === 'dynamic' || hasDynamic) {
+    if (rule.responseType === 'dynamic') {
+      if (!rule.dynamicCode || !rule.dynamicCode.trim()) {
+        // Dynamic selected but no code written yet — return empty object
+        return '{}';
+      }
       try {
-        // Build the args object matching the modifyResponse(args) signature
         const staticBody = rule.responseBody || '{}';
         let responseJSON = null;
         try {
@@ -116,6 +116,8 @@
         return JSON.stringify({ __mockmate_error__: e.message });
       }
     }
+
+    // responseType === "static" (or anything else) — always use responseBody
     return rule.responseBody || '{}';
   }
 
@@ -127,14 +129,30 @@
     if (!rule) return _realFetch(input, init);
 
     const status = parseInt(rule.statusCode || '200', 10);
-    const headers = Object.assign({ 'Content-Type': 'application/json' }, rule.headers || {});
+    const headers = Object.assign({ 'Content-Type': 'application/json' }, rule.headers || {}, {
+      // Makes mocked responses identifiable in the browser console and response headers.
+      // Note: Chrome DevTools Network tab does not show fetch-overridden responses —
+      // they never hit the network. Check the Console tab for [MockMate] logs instead.
+      'X-MockMate-Rule': rule.name,
+      'X-MockMate-Intercepted': 'true'
+    });
     const ctx = { url, method, body: parseBody(bodyRaw), headers: {}, graphql: extractGQL(bodyRaw) };
     const body = buildBody(rule, ctx);
     const delay = parseInt(rule.delay || '0', 10);
 
-    console.info(`[MockMate] 🎭 fetch → ${status}`, url);
+    console.info(
+      `%c[MockMate]%c 🎭 ${method} ${url}\n  rule: "${rule.name}" | type: ${rule.responseType} | status: ${status}`,
+      'color:#6ee7b7;font-weight:bold',
+      'color:inherit'
+    );
+
     const respond = () =>
-      new Response(body, { status, statusText: STATUS_TEXT[status] || 'OK', headers: new Headers(headers) });
+      new Response(body, {
+        status,
+        statusText: STATUS_TEXT[status] || 'OK',
+        headers: new Headers(headers)
+      });
+
     return delay > 0 ? new Promise((r) => setTimeout(() => r(respond()), delay)) : Promise.resolve(respond());
   }
 
@@ -175,11 +193,19 @@
         if (!rule) return _send(bodyRaw);
 
         const status = parseInt(rule.statusCode || '200', 10);
-        const headers = Object.assign({ 'Content-Type': 'application/json' }, rule.headers || {});
+        const headers = Object.assign({ 'Content-Type': 'application/json' }, rule.headers || {}, {
+          'X-MockMate-Rule': rule.name,
+          'X-MockMate-Intercepted': 'true'
+        });
         const ctx = { url: _u, method: _m, body: parseBody(bodyRaw), headers: {}, graphql: extractGQL(bodyRaw) };
         const body = buildBody(rule, ctx);
         const delay = parseInt(rule.delay || '0', 10);
-        console.info(`[MockMate] 🎭 XHR → ${status}`, _u);
+
+        console.info(
+          `%c[MockMate]%c 🎭 XHR ${_m} ${_u}\n  rule: "${rule.name}" | type: ${rule.responseType} | status: ${status}`,
+          'color:#6ee7b7;font-weight:bold',
+          'color:inherit'
+        );
 
         setTimeout(() => {
           Object.defineProperty(xhr, 'readyState', { get: () => 4, configurable: true });
@@ -210,7 +236,6 @@
 
   // ── Receive rules from bridge via postMessage ─────────────────────────────────
   window.addEventListener('message', (e) => {
-    // Only accept messages from our bridge (same window, our marker)
     if (!e.data || !e.data.__mockmate__) return;
 
     const { type, payload } = e.data;
@@ -227,8 +252,8 @@
       for (const { resolve, reject, run } of q) {
         try {
           Promise.resolve(run()).then(resolve).catch(reject);
-        } catch (e) {
-          reject(e);
+        } catch (err) {
+          reject(err);
         }
       }
     }
@@ -243,8 +268,8 @@
       for (const { resolve, reject, run } of q) {
         try {
           Promise.resolve(run()).then(resolve).catch(reject);
-        } catch (e) {
-          reject(e);
+        } catch (err) {
+          reject(err);
         }
       }
     }
