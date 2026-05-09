@@ -121,7 +121,7 @@
     return rule.responseBody || '{}';
   }
 
-  function runRule(mockRule, bodyRaw, isFetchRequest = true, xhrCallback) {
+  function runRule(mockRule, bodyRaw, callback) {
     const { name, responseType, urlPattern: url, method, headers: mockRuleHeaders, statusCode } = mockRule;
     const status = parseInt(statusCode || '200', 10);
     const headers = Object.assign({ 'Content-Type': 'application/json' }, mockRuleHeaders || {}, {
@@ -147,18 +147,7 @@
       'color:inherit'
     );
 
-    if (isFetchRequest) {
-      const response = new Response(body, {
-        status,
-        statusText: STATUS_TEXT[status] || 'OK',
-        headers: new Headers(headers)
-      });
-      return delay > 0
-        ? new Promise((resolve) => setTimeout(() => resolve(response), delay))
-        : Promise.resolve(response);
-    } else {
-      xhrCallback(body, headers, status, delay);
-    }
+    return callback(body, headers, status, delay);
   }
 
   // This runs in the actual webpage context, not the extension isolated world
@@ -169,19 +158,61 @@
       const [resource, config = {}] = args;
       const url = typeof resource === 'string' ? resource : resource instanceof URL ? resource.href : resource.url;
       const method = (config.method || (resource instanceof Request && resource.method) || 'GET').toUpperCase();
-      const bodyRaw = config.body || null;
+
+      let bodyRaw = config.body || null;
+      if (!bodyRaw && resource instanceof Request) {
+        bodyRaw = await resource.clone().text();
+      }
+
+      // 1. Immediate Abort Check
+      if (config.signal?.aborted) {
+        return Promise.reject(new DOMException('The user aborted a request.', 'AbortError'));
+      }
 
       const mockRule = findRule(url, method, bodyRaw);
 
       if (mockRule) {
+        const fetchCallback = (body, headers, status, delay) => {
+          const response = new Response(body, {
+            status,
+            statusText: STATUS_TEXT[status] || 'OK',
+            headers: new Headers(headers)
+          });
+
+          if (delay > 0) {
+            return new Promise((resolve, reject) => {
+              const timeoutId = setTimeout(() => resolve(response), delay);
+
+              // 2. Listen for abort during the delay period
+              config.signal?.addEventListener(
+                'abort',
+                () => {
+                  clearTimeout(timeoutId);
+                  reject(new DOMException('The user aborted a request.', 'AbortError'));
+                },
+                { once: true }
+              ); // Clean up the listener automatically after it fires
+            });
+          }
+          return Promise.resolve(response);
+        };
+
+        // 3. Queue logic stays mostly the same, but pass the signal check through
         if (!_ready) {
           return new Promise((resolve, reject) => {
-            _queue.push({ resolve, reject, run: () => runRule(mockRule, bodyRaw) });
+            const runWithAbortCheck = () => {
+              if (config.signal?.aborted) {
+                return reject(new DOMException('The user aborted a request.', 'AbortError'));
+              }
+              return runRule(mockRule, bodyRaw, fetchCallback);
+            };
+
+            _queue.push({ resolve, reject, run: runWithAbortCheck });
             console.debug('[MockMate] queued:', method, url);
           });
         }
 
-        return runRule(mockRule, bodyRaw);
+        return runRule(mockRule, bodyRaw, fetchCallback);
       }
 
       return originalFetch(...args);
@@ -205,36 +236,52 @@
         const mockRule = findRule(_url, _method, bodyRaw);
 
         if (mockRule) {
-          const xhrCallback = (body, status, headers, delay) => {
+          const xhrCallback = (body, headers, status, delay) => {
             setTimeout(() => {
               Object.defineProperty(xhrRequest, 'readyState', { get: () => 4, configurable: true });
               Object.defineProperty(xhrRequest, 'status', { get: () => status, configurable: true });
               Object.defineProperty(xhrRequest, 'statusText', {
-                get: () => STATUS_TEXT[status] || 'OK',
+                get: () => STATUS_TEXT[status] || `Status ${status}`,
                 configurable: true
               });
               Object.defineProperty(xhrRequest, 'responseText', { get: () => body, configurable: true });
               Object.defineProperty(xhrRequest, 'response', { get: () => body, configurable: true });
+
+              // Case-insensitive header lookup
+              const normalizedHeaders = Object.keys(headers).reduce((acc, key) => {
+                acc[key.toLowerCase()] = headers[key];
+                return acc;
+              }, {});
+
               xhrRequest.getAllResponseHeaders = () =>
                 Object.entries(headers)
                   .map(([k, v]) => `${k}: ${v}`)
                   .join('\r\n');
-              xhrRequest.getResponseHeader = (k) => headers[k] ?? null;
+
+              xhrRequest.getResponseHeader = (k) => normalizedHeaders[k.toLowerCase()] ?? null;
+
+              // Trigger events with correct context and arguments
               ['readystatechange', 'load', 'loadend'].forEach((t) => {
-                xhrRequest.dispatchEvent(new Event(t));
-                if (typeof xhrRequest['on' + t] === 'function') xhrRequest['on' + t].call(xhrRequest);
+                const progressEvent = new ProgressEvent(t, {
+                  lengthComputable: true,
+                  loaded: body.length,
+                  total: body.length
+                });
+                xhrRequest.dispatchEvent(progressEvent);
+                if (typeof xhrRequest['on' + t] === 'function') {
+                  xhrRequest['on' + t].call(xhrRequest, progressEvent); // Pass the progressEvent!
+                }
               });
             }, delay);
           };
 
           if (!_ready) {
-            return new Promise((resolve, reject) => {
-              _queue.push({ resolve, reject, run: () => runRule(mockRule, bodyRaw, false, xhrCallback) });
-              console.debug('[MockMate] queued:', method, url);
-            });
+            _queue.push({ resolve: () => {}, reject: () => {}, run: () => runRule(mockRule, bodyRaw, xhrCallback) });
+            console.debug('[MockMate] queued:', _method, _url);
+            return;
           }
 
-          return runRule(mockRule, bodyRaw, false, xhrCallback);
+          return runRule(mockRule, bodyRaw, xhrCallback);
         }
 
         return _sendRequest(bodyRaw);
