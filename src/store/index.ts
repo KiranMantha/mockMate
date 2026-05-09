@@ -21,8 +21,8 @@ export const filteredRules = computed(() => {
 // ── Storage helpers ───────────────────────────────────────────────────────────
 export async function loadFromStorage(): Promise<void> {
   const data = await chrome.storage.local.get(['mockRules', 'mockEnabled']);
-  rules.value = (data.mockRules ?? []) as MockRule[];
-  globalEnabled.value = (data.mockEnabled ?? true) as boolean;
+  rules.value = (data.mockRules as MockRule[]) ?? [];
+  globalEnabled.value = (data.mockEnabled as boolean) ?? true;
 }
 
 export async function persistRules(updated: MockRule[]): Promise<void> {
@@ -50,7 +50,14 @@ export function makeBlankRule(): MockRule {
     graphqlOperation: '',
     responseType: 'static',
     responseBody: '{\n  "success": true\n}',
-    dynamicCode: '',
+    dynamicCode: [
+      'function modifyResponse(args) {',
+      '  const { method, url, response, responseType, requestHeaders, requestData, responseJSON } = args;',
+      '  // Modify and return the response based on request attributes',
+      '',
+      '  return response;',
+      '}'
+    ].join('\n'),
     statusCode: '200',
     delay: '0',
     headers: { 'Content-Type': 'application/json' },

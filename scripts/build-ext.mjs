@@ -24,13 +24,16 @@ cpSync(resolve(root, 'dist'), distExt, { recursive: true });
 // 2. Extension manifest
 cpSync(resolve(root, 'extension', 'manifest.json'), resolve(distExt, 'manifest.json'));
 
-// 3. Content / background / bridge scripts
+// 3. Extension sandbox
+cpSync(resolve(root, 'extension', 'sandbox.html'), resolve(distExt, 'sandbox.html'));
+
+// 4. Content / background / bridge scripts
 mkdirSync(resolve(distExt, 'src'), { recursive: true });
 ['content.js', 'background.js', 'bridge.js'].forEach((f) => {
   cpSync(resolve(root, 'extension', 'src', f), resolve(distExt, 'src', f));
 });
 
-// 4. Icons
+// 5. Icons
 cpSync(resolve(root, 'extension', 'icons'), resolve(distExt, 'icons'), { recursive: true });
 
 console.log('✅ Extension assembled in dist-ext/');

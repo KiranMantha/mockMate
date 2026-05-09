@@ -116,6 +116,8 @@ export function Dashboard() {
         />
         {rule ? <Editor key={rule.id} rule={rule} onSave={handleSave} /> : <Welcome onNew={handleNew} />}
       </div>
+
+      <iframe id="sandbox-iframe" src={chrome.runtime.getURL('sandbox.html')} style="display: none;" />
     </div>
   );
 }
