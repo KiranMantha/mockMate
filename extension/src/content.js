@@ -157,7 +157,7 @@
         ? new Promise((resolve) => setTimeout(() => resolve(response), delay))
         : Promise.resolve(response);
     } else {
-      xhrCallback(body, headers, delay);
+      xhrCallback(body, headers, status, delay);
     }
   }
 
@@ -205,7 +205,7 @@
         const mockRule = findRule(_url, _method, bodyRaw);
 
         if (mockRule) {
-          const xhrCallback = (body, headers, delay) => {
+          const xhrCallback = (body, status, headers, delay) => {
             setTimeout(() => {
               Object.defineProperty(xhrRequest, 'readyState', { get: () => 4, configurable: true });
               Object.defineProperty(xhrRequest, 'status', { get: () => status, configurable: true });

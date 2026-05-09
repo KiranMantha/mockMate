@@ -111,7 +111,6 @@ export function TestRunner({ rule }: Props) {
         };
 
         const data = await runInSandbox(rule.dynamicCode, args);
-        console.log(data);
 
         return { status, body: JSON.stringify(data), matched: true };
       } catch (e: any) {
