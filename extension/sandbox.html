@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    <script type="text/javascript">
+      console.log('sandbox');
+      window.addEventListener('message', async (event) => {
+        console.log('sandbox event: ', event.data);
+        const { command, code, args, callId } = event.data;
+
+        if (command === 'execute') {
+          try {
+            // In sandbox, new Function is allowed
+            const transform = new Function('args', code + '\n; return modifyResponse(args);');
+            const result = transform(args);
+            window.parent.postMessage({ callId, result }, '*');
+          } catch (e) {
+            window.parent.postMessage({ callId, error: e.message }, '*');
+          }
+        }
+      });
+    </script>
+  </head>
+  <body></body>
+</html>

@@ -3,6 +3,7 @@ import { useSignal } from '@preact/signals';
 import type { HttpMethod, MockRule, ResponseType } from '@types';
 import { useEffect } from 'preact/hooks';
 import styles from './Editor.module.scss';
+import { TestRunner } from './TestRunner';
 
 const DEFAULT_TEMPLATE = [
   'function modifyResponse(args) {',
@@ -201,7 +202,7 @@ export function Editor({ rule, onSave }: Props) {
     } else {
       consoleResult.value = { returnValue: null, logs: [], error: null };
     }
-  }, [rule.id]);
+  }, [rule]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -505,6 +506,14 @@ export function Editor({ rule, onSave }: Props) {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* ── Test ────────────────────────────────────────────────────────── */}
+        <div>
+          <div class={styles.sectionTitle}>Test Rule</div>
+          <div class={styles.fields}>
+            <TestRunner rule={form.value} />
           </div>
         </div>
       </div>

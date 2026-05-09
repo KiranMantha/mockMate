@@ -63,8 +63,8 @@
       if (!rule.enabled) continue;
       if (!rule.urlPattern || !rule.urlPattern.trim()) continue;
       if (!urlMatches(rule.urlPattern, url)) continue;
-      const m = (rule.method || '*').toUpperCase();
-      if (m !== '*' && m !== method.toUpperCase()) continue;
+      const ruleMethod = (rule.method || '*').toUpperCase();
+      if (ruleMethod !== '*' && ruleMethod !== method.toUpperCase()) continue;
       if (rule.type === 'graphql') {
         const gql = extractGQL(bodyRaw);
         if (!gql) continue;
@@ -108,8 +108,8 @@
         };
 
         // eslint-disable-next-line no-new-func
-        const fn = new Function('args', rule.dynamicCode + '\n; return modifyResponse(args);');
-        const result = fn(args);
+        const transform = new Function('args', rule.dynamicCode + '\n; return modifyResponse(args);');
+        const result = transform(args);
         return typeof result === 'string' ? result : JSON.stringify(result, null, 2);
       } catch (e) {
         console.error('[MockMate] dynamic error:', e);
@@ -121,118 +121,128 @@
     return rule.responseBody || '{}';
   }
 
-  // ── Execute fetch (mock or real) ──────────────────────────────────────────────
-  const _realFetch = window.fetch.bind(window);
-
-  function runFetch(input, init, bodyRaw, url, method) {
-    const rule = findRule(url, method, bodyRaw);
-    if (!rule) return _realFetch(input, init);
-
-    const status = parseInt(rule.statusCode || '200', 10);
-    const headers = Object.assign({ 'Content-Type': 'application/json' }, rule.headers || {}, {
+  function runRule(mockRule, bodyRaw, isFetchRequest = true, xhrCallback) {
+    const { name, responseType, urlPattern: url, method, headers: mockRuleHeaders, statusCode } = mockRule;
+    const status = parseInt(statusCode || '200', 10);
+    const headers = Object.assign({ 'Content-Type': 'application/json' }, mockRuleHeaders || {}, {
       // Makes mocked responses identifiable in the browser console and response headers.
       // Note: Chrome DevTools Network tab does not show fetch-overridden responses —
       // they never hit the network. Check the Console tab for [MockMate] logs instead.
-      'X-MockMate-Rule': rule.name,
+      'X-MockMate-Rule': name,
       'X-MockMate-Intercepted': 'true'
     });
-    const ctx = { url, method, body: parseBody(bodyRaw), headers: {}, graphql: extractGQL(bodyRaw) };
-    const body = buildBody(rule, ctx);
-    const delay = parseInt(rule.delay || '0', 10);
+    const ctx = {
+      url,
+      method,
+      body: parseBody(bodyRaw),
+      headers,
+      graphql: extractGQL(bodyRaw)
+    };
+    const body = buildBody(mockRule, ctx);
+    const delay = parseInt(mockRule.delay || '0', 10);
 
     console.info(
-      `%c[MockMate]%c 🎭 ${method} ${url}\n  rule: "${rule.name}" | type: ${rule.responseType} | status: ${status}`,
+      `%c[MockMate]%c 🎭 ${method} ${url}\n  rule: "${name}" | type: ${responseType} | status: ${status}`,
       'color:#6ee7b7;font-weight:bold',
       'color:inherit'
     );
 
-    const respond = () =>
-      new Response(body, {
+    if (isFetchRequest) {
+      const response = new Response(body, {
         status,
         statusText: STATUS_TEXT[status] || 'OK',
         headers: new Headers(headers)
       });
-
-    return delay > 0 ? new Promise((r) => setTimeout(() => r(respond()), delay)) : Promise.resolve(respond());
+      return delay > 0
+        ? new Promise((resolve) => setTimeout(() => resolve(response), delay))
+        : Promise.resolve(response);
+    } else {
+      xhrCallback(body, headers, delay);
+    }
   }
 
-  // ── fetch override ────────────────────────────────────────────────────────────
-  window.fetch = function (input, init) {
-    init = init || {};
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-    const method = (init.method || (input instanceof Request && input.method) || 'GET').toUpperCase();
-    const bodyRaw = init.body || null;
+  // This runs in the actual webpage context, not the extension isolated world
+  function interceptNetwork() {
+    const { fetch: originalFetch, XMLHttpRequest: originalXMLHttpRequest } = window;
 
-    if (!_ready) {
-      return new Promise((resolve, reject) => {
-        _queue.push({ resolve, reject, run: () => runFetch(input, init, bodyRaw, url, method) });
-        console.debug('[MockMate] queued:', method, url);
-      });
-    }
-    return runFetch(input, init, bodyRaw, url, method);
-  };
+    window.fetch = async function (...args) {
+      const [resource, config = {}] = args;
+      const url = typeof resource === 'string' ? resource : resource instanceof URL ? resource.href : resource.url;
+      const method = (config.method || (resource instanceof Request && resource.method) || 'GET').toUpperCase();
+      const bodyRaw = config.body || null;
 
-  // ── XHR override ─────────────────────────────────────────────────────────────
-  const _RealXHR = window.XMLHttpRequest;
-  window.XMLHttpRequest = function () {
-    const xhr = new _RealXHR();
-    let _m = 'GET',
-      _u = '';
+      const mockRule = findRule(url, method, bodyRaw);
 
-    const _open = xhr.open.bind(xhr);
-    xhr.open = function (method, url, ...rest) {
-      _m = method.toUpperCase();
-      _u = url;
-      return _open(method, url, ...rest);
+      if (mockRule) {
+        if (!_ready) {
+          return new Promise((resolve, reject) => {
+            _queue.push({ resolve, reject, run: () => runRule(mockRule, bodyRaw) });
+            console.debug('[MockMate] queued:', method, url);
+          });
+        }
+
+        return runRule(mockRule, bodyRaw);
+      }
+
+      return originalFetch(...args);
     };
 
-    const _send = xhr.send.bind(xhr);
-    xhr.send = function (bodyRaw) {
-      const run = () => {
-        const rule = findRule(_u, _m, bodyRaw);
-        if (!rule) return _send(bodyRaw);
+    window.XMLHttpRequest = function () {
+      const xhrRequest = new originalXMLHttpRequest();
+      let _method = 'GET',
+        _url = '';
 
-        const status = parseInt(rule.statusCode || '200', 10);
-        const headers = Object.assign({ 'Content-Type': 'application/json' }, rule.headers || {}, {
-          'X-MockMate-Rule': rule.name,
-          'X-MockMate-Intercepted': 'true'
-        });
-        const ctx = { url: _u, method: _m, body: parseBody(bodyRaw), headers: {}, graphql: extractGQL(bodyRaw) };
-        const body = buildBody(rule, ctx);
-        const delay = parseInt(rule.delay || '0', 10);
+      const _openRequest = xhrRequest.open.bind(xhrRequest);
+      const _sendRequest = xhrRequest.send.bind(xhrRequest);
 
-        console.info(
-          `%c[MockMate]%c 🎭 XHR ${_m} ${_u}\n  rule: "${rule.name}" | type: ${rule.responseType} | status: ${status}`,
-          'color:#6ee7b7;font-weight:bold',
-          'color:inherit'
-        );
-
-        setTimeout(() => {
-          Object.defineProperty(xhr, 'readyState', { get: () => 4, configurable: true });
-          Object.defineProperty(xhr, 'status', { get: () => status, configurable: true });
-          Object.defineProperty(xhr, 'statusText', { get: () => STATUS_TEXT[status] || 'OK', configurable: true });
-          Object.defineProperty(xhr, 'responseText', { get: () => body, configurable: true });
-          Object.defineProperty(xhr, 'response', { get: () => body, configurable: true });
-          xhr.getAllResponseHeaders = () =>
-            Object.entries(headers)
-              .map(([k, v]) => `${k}: ${v}`)
-              .join('\r\n');
-          xhr.getResponseHeader = (k) => headers[k] ?? null;
-          ['readystatechange', 'load', 'loadend'].forEach((t) => {
-            xhr.dispatchEvent(new Event(t));
-            if (typeof xhr['on' + t] === 'function') xhr['on' + t].call(xhr);
-          });
-        }, delay);
+      xhrRequest.open = function (method, url, ...rest) {
+        _method = method.toUpperCase();
+        _url = url;
+        return _openRequest(method, url, ...rest);
       };
 
-      if (!_ready) {
-        _queue.push({ resolve: () => {}, reject: () => {}, run });
-        return;
-      }
-      run();
+      xhrRequest.send = function (bodyRaw) {
+        const mockRule = findRule(_url, _method, bodyRaw);
+
+        if (mockRule) {
+          const xhrCallback = (body, headers, delay) => {
+            setTimeout(() => {
+              Object.defineProperty(xhrRequest, 'readyState', { get: () => 4, configurable: true });
+              Object.defineProperty(xhrRequest, 'status', { get: () => status, configurable: true });
+              Object.defineProperty(xhrRequest, 'statusText', {
+                get: () => STATUS_TEXT[status] || 'OK',
+                configurable: true
+              });
+              Object.defineProperty(xhrRequest, 'responseText', { get: () => body, configurable: true });
+              Object.defineProperty(xhrRequest, 'response', { get: () => body, configurable: true });
+              xhrRequest.getAllResponseHeaders = () =>
+                Object.entries(headers)
+                  .map(([k, v]) => `${k}: ${v}`)
+                  .join('\r\n');
+              xhrRequest.getResponseHeader = (k) => headers[k] ?? null;
+              ['readystatechange', 'load', 'loadend'].forEach((t) => {
+                xhrRequest.dispatchEvent(new Event(t));
+                if (typeof xhrRequest['on' + t] === 'function') xhrRequest['on' + t].call(xhrRequest);
+              });
+            }, delay);
+          };
+
+          if (!_ready) {
+            return new Promise((resolve, reject) => {
+              _queue.push({ resolve, reject, run: () => runRule(mockRule, bodyRaw, false, xhrCallback) });
+              console.debug('[MockMate] queued:', method, url);
+            });
+          }
+
+          return runRule(mockRule, bodyRaw, false, xhrCallback);
+        }
+
+        return _sendRequest(bodyRaw);
+      };
+
+      return xhrRequest;
     };
-    return xhr;
-  };
+  }
 
   // ── Receive rules from bridge via postMessage ─────────────────────────────────
   window.addEventListener('message', (e) => {
@@ -274,6 +284,8 @@
       }
     }
   }, 500);
+
+  interceptNetwork();
 
   console.debug('[MockMate] interceptor installed, awaiting rules from bridge...');
 })();
