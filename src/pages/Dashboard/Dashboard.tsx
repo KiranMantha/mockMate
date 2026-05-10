@@ -4,6 +4,7 @@ import {
   addGroup,
   addRule,
   deleteRule,
+  groups,
   loadFromStorage,
   makeBlankRule,
   rules,
@@ -12,7 +13,7 @@ import {
   toggleRule,
   updateRule
 } from '@store';
-import type { MockRule } from '@types';
+import type { MockRule, RuleGroup } from '@types';
 import { useEffect } from 'preact/hooks';
 import { Editor } from '../Editor';
 import { Welcome } from '../Welcome';
@@ -79,7 +80,13 @@ export function Dashboard() {
 
   const handleExport = () => {
     const blob = new Blob(
-      [JSON.stringify({ version: 3, exportedAt: new Date().toISOString(), rules: rules.value }, null, 2)],
+      [
+        JSON.stringify(
+          { version: 3, exportedAt: new Date().toISOString(), groups: groups.value, rules: rules.value },
+          null,
+          2
+        )
+      ],
       {
         type: 'application/json'
       }
@@ -103,14 +110,26 @@ export function Dashboard() {
       try {
         const text = await file.text();
         const data = JSON.parse(text);
-        const incoming: MockRule[] = data.rules ?? (Array.isArray(data) ? data : []);
-        const existingIds = new Set(rules.value.map((r) => r.id));
-        const fresh = incoming.filter((r) => !existingIds.has(r.id));
-        const next = [...fresh, ...rules.value];
-        // persist directly
-        await chrome.storage.local.set({ mockRules: next });
-        rules.value = next;
-        showToast(`✅ Imported ${fresh.length} rule(s)`);
+
+        const incomingRules: MockRule[] = data.rules ?? [];
+        const incomingGroups: RuleGroup[] = data.groups ?? [];
+
+        // Merge rules — skip duplicates by id
+        const existingRuleIds = new Set(rules.value.map((r) => r.id));
+        const freshRules = incomingRules.filter((r) => !existingRuleIds.has(r.id));
+
+        // Merge groups — skip duplicates by id
+        const existingGroupIds = new Set(groups.value.map((g) => g.id));
+        const freshGroups = incomingGroups.filter((g) => !existingGroupIds.has(g.id));
+
+        const nextRules = [...freshRules, ...rules.value];
+        const nextGroups = [...freshGroups, ...groups.value];
+
+        await chrome.storage.local.set({ mockRules: nextRules, mockGroups: nextGroups });
+        rules.value = nextRules;
+        groups.value = nextGroups;
+
+        showToast(`✅ Imported ${freshRules.length} rule(s) and ${freshGroups.length} group(s)`);
       } catch {
         showToast('❌ Invalid file');
       }
