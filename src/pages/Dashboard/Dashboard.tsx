@@ -1,6 +1,7 @@
 import { Sidebar, Topbar, confirm, showToast } from '@components';
 import { useSignal } from '@preact/signals';
 import {
+  addGroup,
   addRule,
   deleteRule,
   loadFromStorage,
@@ -32,9 +33,26 @@ export function Dashboard() {
     savedSub.value = undefined;
   }, [selectedId.value]);
 
-  const handleNew = async () => {
+  const handleAddRule = async () => {
     const rule = makeBlankRule();
     await addRule(rule);
+  };
+
+  // NEW: Create a new empty group
+  const handleAddGroup = async () => {
+    const name = window.prompt('Group Name:', 'New Collection');
+    if (!name?.trim()) return;
+    await addGroup(name.trim());
+    showToast('📁 Group created');
+  };
+
+  // NEW: Move a rule to a group (or null for ungrouped)
+  const handleMoveRule = async (ruleId: string, groupId: string) => {
+    const ruleToMove = rules.value.find((r) => r.id === ruleId);
+    if (!ruleToMove) return;
+
+    await updateRule({ ...ruleToMove, groupId });
+    showToast(groupId ? 'Moved to group' : 'Moved to Ungrouped');
   };
 
   const handleSave = async (updated: MockRule) => {
@@ -104,7 +122,13 @@ export function Dashboard() {
 
   return (
     <div class={styles.app}>
-      <Sidebar onNew={handleNew} onImport={handleImport} onExport={handleExport} />
+      <Sidebar
+        onAddRule={handleAddRule} // New Props
+        onAddGroup={handleAddGroup}
+        onMoveRule={handleMoveRule}
+        onImport={handleImport}
+        onExport={handleExport}
+      />
 
       <div class={styles.main}>
         <Topbar
@@ -114,7 +138,7 @@ export function Dashboard() {
           onToggleEnabled={handleToggleEnabled}
           onDelete={handleDelete}
         />
-        {rule ? <Editor key={rule.id} rule={rule} onSave={handleSave} /> : <Welcome onNew={handleNew} />}
+        {rule ? <Editor key={rule.id} rule={rule} onSave={handleSave} /> : <Welcome onAddRule={handleAddRule} />}
       </div>
 
       <iframe id="sandbox-iframe" src={chrome.runtime.getURL('sandbox.html')} style="display: none;" />

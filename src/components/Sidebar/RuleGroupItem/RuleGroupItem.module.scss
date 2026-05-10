@@ -1,0 +1,214 @@
+// RuleGroupItem.module.scss
+@use '@/styles/variables' as *;
+
+.groupWrapper {
+  border-radius: $r;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+
+  // Native behavior: hide the default arrow
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary {
+    list-style: none;
+    background: $surface;
+  }
+
+  &.dragOver {
+    background: rgba($accent, 0.05);
+    border: 1px dashed $accent;
+    transform: scale(1.01);
+  }
+
+  &:not(:only-child),
+  &:not(:last-child) {
+    margin-bottom: 8px;
+  }
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  border-radius: $r;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba($white, 0.03);
+  }
+
+  .arrow {
+    display: inline-block;
+    font-size: 8px;
+    color: $accent;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    // Rotate when <details> is open
+    :global(details[open]) & {
+      transform: rotate(90deg);
+    }
+  }
+
+  .folder {
+    font-size: 14px;
+    filter: grayscale(0.4);
+  }
+
+  .nameContainer {
+    flex: 1;
+
+    .editForm {
+      display: block;
+
+      input {
+        background-color: $bg;
+        border: 1px solid $border;
+        color: $white;
+        padding: 4px;
+        border-radius: 4px;
+        width: 100%;
+      }
+    }
+
+    .groupName {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 600;
+      color: $t2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    button {
+      background: transparent;
+      outline: none;
+      border: none;
+      padding: 2px;
+      cursor: pointer;
+    }
+  }
+}
+
+.groupToggle {
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+}
+
+.groupContent {
+  padding-left: 14px;
+  border-left: 1px solid $border2;
+  margin-top: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  // Animation for the expansion
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.deleteDialog {
+  border: none;
+  border-radius: $r;
+  background: $panel; // Level 2
+  color: $t1;
+  padding: 0;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  max-width: 320px;
+  margin: auto;
+
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(2px);
+  }
+}
+
+.dialogInner {
+  padding: 20px;
+
+  h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    color: $white;
+  }
+
+  p {
+    font-size: 14px;
+    color: $t2;
+    margin-bottom: 20px;
+    line-height: 1.4;
+  }
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: $t1;
+  margin-bottom: 24px;
+  padding-block: 8px;
+  border-radius: 4px;
+
+  input {
+    accent-color: $indigo;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+
+  button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btnCancel {
+    background: $surface;
+    color: $t1;
+    &:hover {
+      background: $surface2;
+    }
+  }
+
+  .btnConfirm {
+    background: $red;
+    color: $white;
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+}

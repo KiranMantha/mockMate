@@ -4,6 +4,7 @@ export type ResponseType = 'static' | 'dynamic';
 
 export type MockRule = {
   id: string;
+  groupId?: string;
   name: string;
   type: ApiType;
   method: HttpMethod;
@@ -18,6 +19,12 @@ export type MockRule = {
   enabled: boolean;
   createdAt: number;
   updatedAt: number;
+};
+
+export type RuleGroup = {
+  id: string;
+  name: string;
+  enabled: boolean;
 };
 
 export type StorageData = {

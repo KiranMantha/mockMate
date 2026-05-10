@@ -1,17 +1,26 @@
 import type { MockRule } from '@types';
 import styles from './RuleItem.module.scss';
 
-interface Props {
+type RuleItemProps = {
   rule: MockRule;
   selected: boolean;
   onSelect: (id: string) => void;
   onDelete: (id: string, name: string) => void;
-}
+};
 
-export function RuleItem({ rule, selected, onSelect, onDelete }: Props) {
+export function RuleItem({ rule, selected, onSelect, onDelete }: RuleItemProps) {
+  const onDragStart = (e: DragEvent) => {
+    e.dataTransfer?.setData('ruleId', rule.id);
+    // Add a ghost effect if desired
+    e.dataTransfer!.effectAllowed = 'move';
+  };
+
   return (
     <div
       class={`${styles.item} ${selected ? styles.active : ''} ${!rule.enabled ? styles.dim : ''}`}
+      draggable
+      onDragStart={onDragStart}
+      onDragEnd={(e) => (e.currentTarget as HTMLElement).classList.remove(styles.dragging)}
       onClick={(e) => {
         const target = e.target as HTMLElement;
         if (!target.closest('[data-toggle]') && !target.closest('[data-del]')) onSelect(rule.id);
