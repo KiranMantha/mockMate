@@ -32,7 +32,7 @@ export function Topbar({ rule, savedTitle, savedSub, onToggleEnabled, onDelete }
       <div class={styles.right}>
         <div class={`${styles.ruleToggle} ${rule.enabled ? styles.on : ''}`}>
           <span class={styles.toggleLabel}>{rule.enabled ? 'Enabled' : 'Disabled'}</span>
-          <Toggle checked={rule.enabled} onChange={onToggleEnabled} />
+          <Toggle small checked={rule.enabled} onChange={onToggleEnabled} />
         </div>
         <button class={styles.btnDelete} onClick={onDelete}>
           🗑 Delete

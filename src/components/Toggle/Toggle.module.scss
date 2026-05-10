@@ -12,12 +12,11 @@
     display: none;
 
     &:checked ~ .track {
-      background: rgba($accent, 0.15);
-      border-color: $accent;
+      background: rgba($indigo, 0.75);
+      border-color: $indigo;
 
       &::before {
         transform: translateX(17px);
-        background: $accent;
       }
     }
   }
@@ -27,7 +26,7 @@
   position: absolute;
   inset: 0;
   background: $surface2;
-  border: 1px solid $border;
+  border: 1px solid $accent;
   border-radius: 21px;
   transition: all 0.2s;
   cursor: pointer;
@@ -37,7 +36,7 @@
     position: absolute;
     width: 15px;
     height: 15px;
-    background: $t3;
+    background: $accent;
     border-radius: 50%;
     top: 2px;
     left: 2px;

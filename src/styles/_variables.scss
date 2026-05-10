@@ -1,21 +1,54 @@
 // Colors
-$bg: #0c0e14;
-$sidebar: #0f1118;
-$panel: #13161f;
-$surface: #1a1e2a;
-$surface2: #21263a;
-$border: #252b3d;
-$border2: #1d2130;
 
-$accent: #6ee7b7;
+// $white: #fff;
+// $bg: #121212; // Pure neutral dark
+// $sidebar: #181818; // Subtle lift
+// $panel: #1e1e1e; // Elevated surface
+// $surface: #262626; // Active items
+// $surface2: #333333; // Hover states
+// $border: #3f3f3f; // Mid-gray borders
+// $border2: #2d2d2d; // Subtle separators
+
+// // Refined Accents (Indigo focus with clean grays)
+// $accent: #ffffff; // High-contrast primary action
+// $indigo: #818cf8; // The only "color" for focus/branding
+// $orange: #e5e5e5; // Light gray for secondary warnings
+// $red: #ff5f5f; // Clean error red
+// $yellow: #facc15; // Sharp warning yellow
+
+// // Neutral Typography
+// $t1: #f5f5f5; // Off-white
+// $t2: #a3a3a3; // Medium gray
+// $t3: #525252; // Muted gray
+
+// Three-Level Gray Hierarchy
+$white: #fff;
+
+// Level 1: The Foundation (Sidebar & Head)
+$bg: #121212;
+$sidebar: #121212;
+
+// Level 2: The Workspace (Editor & Main Panel)
+$panel: #181818;
+
+// Level 3: The Interactive Elements (Rules & Groups)
+$surface: #222222; // Static item color (Lighter than sidebar)
+$surface2: #2a2a2a; // Active & Hover (Set as same per your request)
+
+// Borders & Dividers
+$border: #333333;
+$border2: #242424;
+
+// Accents & Text
+$accent: #ffffff;
 $indigo: #818cf8;
-$orange: #fb923c;
-$red: #f87171;
-$yellow: #fbbf24;
+$orange: #e5e5e5; // Light gray for secondary warnings
+$red: #ff5f5f;
+$yellow: #facc15;
 
-$t1: #dde3f0;
-$t2: #7c869e;
-$t3: #3d4460;
+$t1: #f5f5f5; // Primary text
+$t2: #a3a3a3; // Secondary/labels
+$t3: #525252; // Muted/disabled
 
 // Typography
 $mono: 'JetBrains Mono', monospace;
@@ -23,7 +56,7 @@ $sans: 'Inter', sans-serif;
 
 // Spacing / radius
 $r: 8px;
-$sidebar-w: 300px;
+$sidebar-w: 400px;
 
 // Mixins
 @mixin focus-ring {
