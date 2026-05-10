@@ -132,52 +132,6 @@ function runDynamic(code: string): RunResult {
   }
 }
 
-// ── ConsolePreview component ──────────────────────────────────────────────────
-interface ConsolePreviewProps {
-  result: RunResult;
-}
-
-function ConsolePreview({ result }: ConsolePreviewProps) {
-  const hasLogs = result.logs.length > 0;
-  const hasReturn = result.returnValue !== null;
-  const hasError = result.error !== null;
-  const isEmpty = !hasLogs && !hasReturn && !hasError;
-
-  return (
-    <div class={styles.consoleWrap}>
-      <div class={styles.consoleHeader}>
-        <span>Console</span>
-        {hasError && <span class={styles.consoleBadgeErr}>Error</span>}
-        {!hasError && hasLogs && <span class={styles.consoleBadge}>{result.logs.length}</span>}
-      </div>
-      <div class={styles.consoleBody}>
-        {isEmpty && <span class={styles.consoleMuted}>No output — add console.log() calls to see them here</span>}
-
-        {result.logs.map((entry, i) => (
-          <div key={i} class={`${styles.consoleLine} ${styles[`console_${entry.level}`]}`}>
-            <span class={styles.consoleLevel}>{entry.level}</span>
-            <span class={styles.consoleArgs}>{entry.args}</span>
-          </div>
-        ))}
-
-        {hasError && (
-          <div class={`${styles.consoleLine} ${styles.console_error}`}>
-            <span class={styles.consoleLevel}>error</span>
-            <span class={styles.consoleArgs}>{result.error}</span>
-          </div>
-        )}
-
-        {hasReturn && !hasError && (
-          <div class={styles.consoleReturn}>
-            <span class={styles.consoleReturnLabel}>↩ return</span>
-            <span class={styles.consoleReturnValue}>{result.returnValue}</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ── Editor ────────────────────────────────────────────────────────────────────
 interface Props {
   rule: MockRule;
@@ -222,6 +176,15 @@ export function Editor({ rule, onSave }: Props) {
     if ('dynamicCode' in patch) {
       const code = (patch.dynamicCode ?? '').trim();
       consoleResult.value = code ? runDynamic(code) : { returnValue: null, logs: [], error: null };
+    }
+  };
+
+  const switchTab = (tab: ResponseType) => {
+    activeTab.value = tab;
+    dirty.value = true;
+    if (tab === 'dynamic' && !form.value.dynamicCode?.trim()) {
+      form.value = { ...form.value, dynamicCode: DEFAULT_TEMPLATE };
+      consoleResult.value = runDynamic(DEFAULT_TEMPLATE);
     }
   };
 
@@ -364,30 +327,37 @@ export function Editor({ rule, onSave }: Props) {
             <div class={styles.sectionTitle}>Response</div>
             <div class={styles.fields}>
               <div class={styles.field}>
-                <div class={styles.respTabs}>
-                  <button
-                    class={`${styles.tab} ${activeTab.value === 'static' ? styles.active : ''}`}
-                    onClick={() => {
-                      activeTab.value = 'static';
-                      dirty.value = true;
-                    }}
-                  >
-                    📄 Static JSON
-                  </button>
-                  <button
-                    class={`${styles.tab} ${activeTab.value === 'dynamic' ? styles.active : ''}`}
-                    onClick={() => {
-                      activeTab.value = 'dynamic';
-                      dirty.value = true;
-                      // Seed the default template if the textarea is empty
-                      if (!form.value.dynamicCode?.trim()) {
-                        form.value = { ...form.value, dynamicCode: DEFAULT_TEMPLATE };
-                        consoleResult.value = runDynamic(DEFAULT_TEMPLATE);
-                      }
-                    }}
-                  >
-                    ⚡ Dynamic JS
-                  </button>
+                <label>Response Type</label>
+                <div class={styles.radioGroup}>
+                  <label class={`${styles.radioOption} ${activeTab.value === 'static' ? styles.radioSelected : ''}`}>
+                    <input
+                      type="radio"
+                      name="responseType"
+                      value="static"
+                      checked={activeTab.value === 'static'}
+                      onChange={() => switchTab('static')}
+                    />
+                    <span class={styles.radioMark} />
+                    <span class={styles.radioLabel}>
+                      <span class={styles.radioTitle}>📄 Static JSON</span>
+                      <span class={styles.radioDesc}>Fixed JSON response body</span>
+                    </span>
+                  </label>
+
+                  <label class={`${styles.radioOption} ${activeTab.value === 'dynamic' ? styles.radioSelected : ''}`}>
+                    <input
+                      type="radio"
+                      name="responseType"
+                      value="dynamic"
+                      checked={activeTab.value === 'dynamic'}
+                      onChange={() => switchTab('dynamic')}
+                    />
+                    <span class={styles.radioMark} />
+                    <span class={styles.radioLabel}>
+                      <span class={styles.radioTitle}>⚡ Dynamic JS</span>
+                      <span class={styles.radioDesc}>JavaScript function — modify response at runtime</span>
+                    </span>
+                  </label>
                 </div>
               </div>
 
@@ -438,11 +408,8 @@ export function Editor({ rule, onSave }: Props) {
                   <div class={styles.hint} style="margin-bottom: 10px">
                     <code>args</code> contains: <code>method</code>, <code>url</code>, <code>response</code>,{' '}
                     <code>responseType</code>, <code>requestHeaders</code>, <code>requestData</code>,{' '}
-                    <code>responseJSON</code>. Script runs live — console output appears below.
+                    <code>responseJSON</code>.
                   </div>
-
-                  {/* Console output — same position as static preview */}
-                  <ConsolePreview result={consoleResult.value} />
                 </div>
               )}
             </div>
