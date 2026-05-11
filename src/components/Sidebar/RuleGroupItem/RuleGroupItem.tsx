@@ -1,5 +1,5 @@
 // RuleGroupItem.tsx
-import { Toggle, showToast } from '@components';
+import { Icon, IconButton, Toggle, showToast } from '@components';
 import { deleteGroup, deleteRule, renameGroup, rules, toggleGroup, updateRule } from '@store';
 import { useRef, useState } from 'preact/hooks';
 import styles from './RuleGroupItem.module.scss'; // New SCSS import
@@ -102,16 +102,11 @@ export function RuleGroupItem({ group, children }: RuleGroupItemProps) {
       >
         <summary class={styles.groupHeader}>
           <span class={styles.arrow}>▶</span>
-          <span class={styles.folder}>📁</span>
+          <Icon name="folder" size={13} />
           <div class={styles.nameContainer} onClick={(e) => e.stopPropagation()}>
             {isEditing ? (
               <form id={renameFormId} onSubmit={handleSave} class={styles.editForm}>
-                <input
-                  autoFocus
-                  name="groupName" // Matches formData.get('groupName')
-                  defaultValue={group.name}
-                  class={styles.renameInput}
-                />
+                <input autoFocus name="groupName" defaultValue={group.name} class={styles.renameInput} />
               </form>
             ) : (
               <span class={styles.groupName}>{group.name}</span>
@@ -120,30 +115,30 @@ export function RuleGroupItem({ group, children }: RuleGroupItemProps) {
           <div class={styles.actions} onClick={(e) => e.stopPropagation()}>
             {isEditing ? (
               <>
-                {/* Linked to renameFormId */}
-                <button type="submit" form={renameFormId} class={styles.actionBtn} title="Save">
-                  ✅
-                </button>
-                <button type="button" class={styles.actionBtn} onClick={cancelEditing} title="Cancel">
-                  ❌
-                </button>
+                <IconButton type="submit" className={'save'} form={renameFormId} title="Save">
+                  <Icon name="check" size={14} />
+                </IconButton>
+
+                <IconButton type="button" className={'cancel'} onClick={cancelEditing} title="Cancel">
+                  <Icon name="close" size={14} />
+                </IconButton>
               </>
             ) : (
               <>
-                <button type="button" class={styles.actionBtn} onClick={startEditing} title="Rename">
-                  ✏️
-                </button>
-                <button
+                <IconButton type="button" className={'default'} onClick={startEditing} title="Rename">
+                  <Icon name="edit" size={14} />
+                </IconButton>
+                <IconButton
                   type="button"
-                  class={styles.actionBtn}
+                  className={'danger'}
                   onClick={(e) => {
                     e.stopPropagation();
                     dialogRef.current?.showModal();
                   }}
                   title="Delete Group"
                 >
-                  🗑️
-                </button>
+                  <Icon name="delete" size={14} />
+                </IconButton>
               </>
             )}
 

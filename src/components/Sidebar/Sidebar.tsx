@@ -1,5 +1,7 @@
 import { deleteRule, filteredRules, globalEnabled, groups, searchQuery, selectedId, setGlobalEnabled } from '@store';
+import { useRef } from 'preact/hooks';
 import { confirm } from '../ConfirmDialog';
+import { Icon } from '../Icon';
 import { showToast } from '../Toast';
 import { Toggle } from '../Toggle';
 import { RuleGroupItem } from './RuleGroupItem';
@@ -19,7 +21,7 @@ export function Sidebar({ onAddRule, onAddGroup, onMoveRule, onImport, onExport 
   const enabled = globalEnabled.value;
   const allGroups = groups.value;
 
-  console.log('sidebar', { rules, enabled, allGroups });
+  const dropdownRef = useRef<HTMLDetailsElement>(null);
 
   const handleGlobalToggle = async (val: boolean) => {
     await setGlobalEnabled(val);
@@ -84,9 +86,37 @@ export function Sidebar({ onAddRule, onAddGroup, onMoveRule, onImport, onExport 
             onInput={(e) => (searchQuery.value = (e.target as HTMLInputElement).value)}
           />
         </div>
-        <button class={styles.btnNew} onClick={onAddRule}>
+        {/* <button class={styles.btnNew} onClick={onAddRule}>
           + New
-        </button>
+        </button> */}
+        <details class={styles.newDropdown} ref={dropdownRef}>
+          <summary class={styles.newDropdownTrigger}>
+            <Icon name="plus" />
+            <Icon name="chevron-down" />
+          </summary>
+          <div class={styles.newDropdownMenu}>
+            <button
+              class={styles.newDropdownItem}
+              onClick={() => {
+                onAddRule();
+                if (dropdownRef.current) dropdownRef.current.open = false;
+              }}
+            >
+              <Icon name="file" size={13} />
+              New Rule
+            </button>
+            <button
+              class={styles.newDropdownItem}
+              onClick={() => {
+                onAddGroup();
+                if (dropdownRef.current) dropdownRef.current.open = false;
+              }}
+            >
+              <Icon name="folder" size={13} />
+              New Group
+            </button>
+          </div>
+        </details>
       </div>
 
       <div class={styles.list}>
@@ -127,13 +157,29 @@ export function Sidebar({ onAddRule, onAddGroup, onMoveRule, onImport, onExport 
 
       <div class={styles.foot}>
         <button class={styles.btnFooter} onClick={onImport}>
-          ⬆ Import
+          <Icon name="upload" /> Import
         </button>
         <button class={styles.btnFooter} onClick={onExport}>
-          ⬇ Export
+          <Icon name="download" /> Export
         </button>
-        <button class={styles.btnFooter} onClick={() => onAddGroup()}>
+        {/* <button class={styles.btnFooter} onClick={() => onAddGroup()}>
           + New Group
+        </button> */}
+        <button
+          class={`${styles.btnFooter} ${styles.btnDanger}`}
+          onClick={() =>
+            confirm(
+              'Clear all rules?',
+              'This will permanently delete all rules and groups. This cannot be undone.',
+              async () => {
+                await chrome.storage.local.set({ mockRules: [], mockGroups: [] });
+                selectedId.value = null;
+                showToast('🗑️ All rules cleared');
+              }
+            )
+          }
+        >
+          <Icon name="delete" /> Delete
         </button>
       </div>
     </aside>

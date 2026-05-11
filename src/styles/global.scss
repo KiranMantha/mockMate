@@ -64,7 +64,48 @@ select {
   }
 }
 
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
 textarea {
   resize: vertical;
   line-height: 1.6;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.1s;
+  background: transparent;
+  outline: none;
+
+  &--default {
+    background: $surface;
+    border: 1px solid $border;
+    color: $t2;
+  }
+
+  &--save {
+    border: 1px solid rgba($indigo, 0.3);
+    color: $indigo;
+  }
+
+  &--cancel {
+    border: 1px solid rgba($yellow, 0.3);
+    color: $yellow;
+  }
+
+  &--danger {
+    border: 1px solid rgba($red, 0.3);
+    color: $red;
+  }
 }

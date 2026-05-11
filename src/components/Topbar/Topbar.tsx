@@ -1,4 +1,5 @@
 import type { MockRule } from '@types';
+import { Icon } from '../Icon';
 import { Toggle } from '../Toggle';
 import styles from './Topbar.module.scss';
 
@@ -35,7 +36,7 @@ export function Topbar({ rule, savedTitle, savedSub, onToggleEnabled, onDelete }
           <Toggle small checked={rule.enabled} onChange={onToggleEnabled} />
         </div>
         <button class={styles.btnDelete} onClick={onDelete}>
-          🗑 Delete
+          <Icon name="delete" /> Delete
         </button>
       </div>
     </div>
