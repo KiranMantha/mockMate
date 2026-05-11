@@ -1,3 +1,4 @@
+import { Icon, IconButton } from '@components';
 import type { MockRule } from '@types';
 import styles from './RuleItem.module.scss';
 
@@ -32,25 +33,21 @@ export function RuleItem({ rule, selected, onSelect, onDelete }: RuleItemProps) 
       </div>
 
       <div class={styles.tags}>
-        <span class={`${styles.tag} ${rule.type === 'graphql' ? styles.gql : styles.rest}`}>
-          {rule.type === 'graphql' ? 'GQL' : 'REST'}
-        </span>
-        {rule.responseType === 'dynamic' && <span class={`${styles.tag} ${styles.js}`}>JS</span>}
+        <span class={styles.tag}>{rule.type === 'graphql' ? 'GQL' : 'REST'}</span>
+        <span class={`${styles.tag} ${styles.responseType}`}>{rule.responseType === 'dynamic' ? 'JS' : 'Static'}</span>
       </div>
 
-      <button
+      <IconButton
         data-del
-        class={styles.delBtn}
+        className={'danger'}
         title="Delete"
         onClick={(e) => {
           e.stopPropagation();
           onDelete(rule.id, rule.name);
         }}
       >
-        <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={2.5}>
-          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
-        </svg>
-      </button>
+        <Icon name="delete" />
+      </IconButton>
     </div>
   );
 }

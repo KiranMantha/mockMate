@@ -25,12 +25,6 @@
     border-color: $border;
   }
 
-  &:hover {
-    .delBtn {
-      opacity: 1;
-    }
-  }
-
   &.active {
     &::before {
       content: '';
@@ -81,43 +75,13 @@
   padding: 1px 5px;
   border-radius: 3px;
   text-transform: uppercase;
+  background: rgba($indigo, 0.12);
+  color: $indigo;
+  border: 1px solid rgba($indigo, 0.25);
 
-  &.rest {
-    background: rgba($indigo, 0.12);
-    color: $indigo;
-    border: 1px solid rgba($indigo, 0.25);
-  }
-
-  &.gql {
-    background: rgba($orange, 0.12);
-    color: $orange;
-    border: 1px solid rgba($orange, 0.25);
-  }
-
-  &.js {
+  &.responseType {
     background: rgba($accent, 0.08);
     color: $accent;
     border: 1px solid rgba($accent, 0.2);
-  }
-}
-
-.delBtn {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  border-radius: 4px;
-  cursor: pointer;
-  color: $t3;
-  opacity: 0;
-  transition: all 0.12s;
-  flex-shrink: 0;
-
-  &:hover {
-    background: rgba($red, 0.1);
-    color: $red;
   }
 }
