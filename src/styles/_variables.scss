@@ -1,54 +1,34 @@
 // Colors
-
-// $white: #fff;
-// $bg: #121212; // Pure neutral dark
-// $sidebar: #181818; // Subtle lift
-// $panel: #1e1e1e; // Elevated surface
-// $surface: #262626; // Active items
-// $surface2: #333333; // Hover states
-// $border: #3f3f3f; // Mid-gray borders
-// $border2: #2d2d2d; // Subtle separators
-
-// // Refined Accents (Indigo focus with clean grays)
-// $accent: #ffffff; // High-contrast primary action
-// $indigo: #818cf8; // The only "color" for focus/branding
-// $orange: #e5e5e5; // Light gray for secondary warnings
-// $red: #ff5f5f; // Clean error red
-// $yellow: #facc15; // Sharp warning yellow
-
-// // Neutral Typography
-// $t1: #f5f5f5; // Off-white
-// $t2: #a3a3a3; // Medium gray
-// $t3: #525252; // Muted gray
-
-// Three-Level Gray Hierarchy
 $white: #fff;
 
-// Level 1: The Foundation (Sidebar & Head)
-$bg: #121212;
-$sidebar: #121212;
+// Level 1: Sidebar — darkest
+$bg: #0a0a0a;
+$sidebar: #0a0a0a;
+$bg-active: #6ee7b7;
 
-// Level 2: The Workspace (Editor & Main Panel)
-$panel: #181818;
+// Level 2: Main panel — visible step up from sidebar
+$panel: #161616;
 
-// Level 3: The Interactive Elements (Rules & Groups)
-$surface: #222222; // Static item color (Lighter than sidebar)
-$surface2: #2a2a2a; // Active & Hover (Set as same per your request)
+// Level 3: Cards, inputs, surfaces — clearly lifted from panel
+$surface: #222222; // inputs, rule cards, code blocks
+$surface2: #2e2e2e; // hover, active states
 
-// Borders & Dividers
-$border: #333333;
-$border2: #242424;
+// Borders — must be visible against all surface levels
+$border: #3d3d3d; // up from #333 — now actually visible
+$border2: #262626; // subtle section dividers
 
-// Accents & Text
-$accent: #ffffff;
+// Accents
+$accent: #6ee7b7;
 $indigo: #818cf8;
-$orange: #e5e5e5; // Light gray for secondary warnings
-$red: #ff5f5f;
-$yellow: #facc15;
+$orange: #fb923c;
+$red: #f87171;
+$yellow: #fbbf24;
 
-$t1: #f5f5f5; // Primary text
-$t2: #a3a3a3; // Secondary/labels
-$t3: #525252; // Muted/disabled
+// Text — more aggressive contrast steps
+$t1: #f5f5f5; // primary — headings, values
+$t2: #b0b0b0; // up from #a3a3a3 — labels, secondary text
+$t3: #666666; // up from #525252 — placeholders, muted
+$t4: #0a0d10; // on-accent (dark text on green)
 
 // Typography
 $mono: 'JetBrains Mono', monospace;

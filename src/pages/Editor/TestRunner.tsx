@@ -216,7 +216,6 @@ export function TestRunner({ rule }: Props) {
           <label>Request Body — JSON (optional)</label>
           <textarea
             rows={3}
-            style="font-family:var(--mono,monospace);font-size:12px"
             value={testBody.value}
             placeholder='{"key": "value"}'
             onInput={(e) => (testBody.value = (e.target as HTMLTextAreaElement).value)}
@@ -276,7 +275,7 @@ export function TestRunner({ rule }: Props) {
 
       {/* ── Hint ─────────────────────────────────────────────────────────────── */}
       {!actualResult.value && !mockedResult.value && (
-        <div class={styles.hint}>
+        <div class="hint">
           Enter a concrete URL and click <strong>Run Test</strong>. The actual response comes from the real network; the
           mocked response is computed locally from your rule — no page reload needed.
         </div>

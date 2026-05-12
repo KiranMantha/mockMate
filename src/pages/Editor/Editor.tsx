@@ -300,7 +300,7 @@ export function Editor({ rule, onSave }: Props) {
                   placeholder="https://api.example.com/users/* or *jsonplaceholder*users*"
                   onInput={(e) => set({ urlPattern: (e.target as HTMLInputElement).value })}
                 />
-                <div class={styles.hint}>
+                <div class="hint">
                   Use <code>*</code> as wildcard. Matched against the full request URL.
                 </div>
               </div>
@@ -314,7 +314,7 @@ export function Editor({ rule, onSave }: Props) {
                     placeholder="e.g. GetUser, ListPosts"
                     onInput={(e) => set({ graphqlOperation: (e.target as HTMLInputElement).value })}
                   />
-                  <div class={styles.hint}>
+                  <div class="hint">
                     Matches <code>operationName</code> in the request body. Leave empty to match all operations.
                   </div>
                 </div>
@@ -405,7 +405,7 @@ export function Editor({ rule, onSave }: Props) {
                       </button>
                     ))}
                   </div>
-                  <div class={styles.hint} style="margin-bottom: 10px">
+                  <div class="hint">
                     <code>args</code> contains: <code>method</code>, <code>url</code>, <code>response</code>,{' '}
                     <code>responseType</code>, <code>requestHeaders</code>, <code>requestData</code>,{' '}
                     <code>responseJSON</code>.
@@ -455,7 +455,7 @@ export function Editor({ rule, onSave }: Props) {
                     placeholder="0"
                     onInput={(e) => set({ delay: (e.target as HTMLInputElement).value })}
                   />
-                  <div class={styles.hint}>Simulates network latency</div>
+                  <div class="hint">Simulates network latency</div>
                 </div>
               </div>
 
@@ -491,10 +491,8 @@ export function Editor({ rule, onSave }: Props) {
           {dirty.value ? 'Unsaved changes' : 'All saved'}
         </span>
         <div class={styles.saveActions}>
-          <button class={styles.btnDiscard} onClick={handleDiscard}>
-            Discard
-          </button>
-          <button class={styles.btnSave} onClick={handleSave}>
+          <button onClick={handleDiscard}>Discard</button>
+          <button data-variant="inverted" onClick={handleSave}>
             Save Rule
           </button>
         </div>

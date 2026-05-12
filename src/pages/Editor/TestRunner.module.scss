@@ -3,7 +3,7 @@
 .wrap {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
 }
 
 // ── URL bar ───────────────────────────────────────────────────────────────────
@@ -31,25 +31,12 @@
 }
 
 .btnRun {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 16px;
-  height: 36px;
   background: $accent;
-  color: #0a0d10;
-  border: none;
-  border-radius: $r;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s;
-  font-family: $sans;
+  color: $t4;
 
   &:hover:not(:disabled) {
-    background: #86efb5;
+    background: $bg-active;
+    color: $t4;
   }
 
   &:disabled {
@@ -62,13 +49,15 @@
   width: 12px;
   height: 12px;
   border: 2px solid rgba(0, 0, 0, 0.2);
-  border-top-color: #0a0d10;
+  border-top-color: $t4;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 // ── Request body ──────────────────────────────────────────────────────────────
@@ -121,10 +110,22 @@
   padding: 2px 7px;
   border-radius: 4px;
 
-  &.s2xx { background: rgba($accent, 0.12); color: $accent; }
-  &.s3xx { background: rgba($yellow, 0.12); color: $yellow; }
-  &.s4xx { background: rgba($orange, 0.12); color: $orange; }
-  &.s5xx { background: rgba($red, 0.12);    color: $red;    }
+  &.s2xx {
+    background: rgba($accent, 0.12);
+    color: $accent;
+  }
+  &.s3xx {
+    background: rgba($yellow, 0.12);
+    color: $yellow;
+  }
+  &.s4xx {
+    background: rgba($orange, 0.12);
+    color: $orange;
+  }
+  &.s5xx {
+    background: rgba($red, 0.12);
+    color: $red;
+  }
 }
 
 .matchBadge {
@@ -134,8 +135,16 @@
   padding: 2px 7px;
   border-radius: 4px;
 
-  &.matched  { background: rgba($accent, 0.12); color: $accent; border: 1px solid rgba($accent, 0.3); }
-  &.bypassed { background: rgba($t3, 0.12);     color: $t2;     border: 1px solid $border; }
+  &.matched {
+    background: rgba($accent, 0.12);
+    color: $accent;
+    border: 1px solid rgba($accent, 0.3);
+  }
+  &.bypassed {
+    background: rgba($t3, 0.12);
+    color: $t2;
+    border: 1px solid $border;
+  }
 }
 
 .resultBody {
@@ -183,18 +192,4 @@
   font-size: 11.5px;
   color: $yellow;
   line-height: 1.5;
-}
-
-.hint {
-  font-size: 11px;
-  color: $t3;
-  line-height: 1.5;
-
-  code {
-    background: $surface2;
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-family: $mono;
-    font-size: 10px;
-  }
 }

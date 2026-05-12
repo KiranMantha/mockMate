@@ -12,6 +12,7 @@
   position: relative;
   background: $surface;
   border: 1px solid $border2;
+  height: 50px;
 
   &:not(:only-child),
   &:not(:last-child) {
@@ -22,12 +23,6 @@
   &.active {
     background: $surface2;
     border-color: $border;
-  }
-
-  &:hover {
-    .delBtn {
-      opacity: 1;
-    }
   }
 
   &.active {
@@ -80,43 +75,12 @@
   padding: 1px 5px;
   border-radius: 3px;
   text-transform: uppercase;
+  background: $bg;
+  color: $indigo;
+  border: 1px solid rgba($indigo, 0.8);
 
-  &.rest {
-    background: rgba($indigo, 0.12);
-    color: $indigo;
-    border: 1px solid rgba($indigo, 0.25);
-  }
-
-  &.gql {
-    background: rgba($orange, 0.12);
-    color: $orange;
-    border: 1px solid rgba($orange, 0.25);
-  }
-
-  &.js {
-    background: rgba($accent, 0.08);
+  &.responseType {
     color: $accent;
-    border: 1px solid rgba($accent, 0.2);
-  }
-}
-
-.delBtn {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  border-radius: 4px;
-  cursor: pointer;
-  color: $t3;
-  opacity: 0;
-  transition: all 0.12s;
-  flex-shrink: 0;
-
-  &:hover {
-    background: rgba($red, 0.1);
-    color: $red;
+    border: 1px solid rgba($accent, 0.8);
   }
 }

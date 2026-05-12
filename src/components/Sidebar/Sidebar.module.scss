@@ -14,8 +14,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 1px solid $border2;
+  border-bottom: 1px solid $border;
   flex-shrink: 0;
+  height: 62px;
 }
 
 .logo {
@@ -119,24 +120,12 @@
 }
 
 .btnNew {
-  display: flex;
-  align-items: center;
-  gap: 4px;
   padding: 0 11px;
   height: 32px;
   background: $accent;
-  color: #0a0d10;
+  color: $t4;
   border: none;
-  border-radius: $r;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s;
-
-  &:hover {
-    background: #86efb5;
-  }
 }
 
 // ── Rule list ─────────────────────────────────────────────────────────────────
@@ -181,28 +170,89 @@
 
 // ── Footer ────────────────────────────────────────────────────────────────────
 .foot {
-  padding: 8px;
-  border-top: 1px solid $border2;
   display: flex;
+  align-items: stretch;
+  border-top: 1px solid $border;
   gap: 6px;
   flex-shrink: 0;
+  padding: 9px 8px;
+
+  button {
+    flex: 1;
+  }
 }
 
-.btnFooter {
-  flex: 1;
-  padding: 6px 0;
-  background: $surface;
-  border: 1px solid $border;
-  border-radius: $r;
-  font-size: 11px;
-  font-weight: 600;
-  color: $t2;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.12s;
+.newDropdown {
+  position: relative;
 
-  &:hover {
-    background: $surface2;
-    color: $t1;
+  // Hide the default marker on summary
+  summary {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 10px;
+    height: 32px;
+    background: rgba($accent, 0.06);
+    border: 1px solid rgba($accent, 0.4);
+    color: $accent;
+    border-radius: $r;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    list-style: none;
+    transition: background 0.15s;
+
+    &::-webkit-details-marker,
+    &::marker {
+      display: none;
+    }
+  }
+
+  &[open] > summary::before {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 9998;
+    display: block;
+    cursor: default;
+    content: ' ';
+    background: transparent;
+  }
+
+  .newDropdownMenu {
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    background: $surface;
+    border: 1px solid $border;
+    border-radius: $r;
+    padding: 4px;
+    min-width: 140px;
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+    .newDropdownItem {
+      justify-content: flex-start;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 13px;
+      border: none;
+      border-radius: 5px;
+      background: transparent;
+      color: $t2;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      font-family: $sans;
+      transition: background 0.1s;
+
+      &:hover {
+        background: $surface2;
+      }
+    }
   }
 }

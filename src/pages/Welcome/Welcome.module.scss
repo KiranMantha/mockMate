@@ -10,38 +10,16 @@
   color: $t3;
   text-align: center;
   padding: 24px;
-}
 
-.art {
-  font-size: 56px;
-  opacity: 0.12;
-}
+  .title {
+    font-size: 18px;
+    font-weight: 800;
+    color: $t2;
+  }
 
-.title {
-  font-size: 18px;
-  font-weight: 800;
-  color: $t2;
-}
-
-.desc {
-  font-size: 13px;
-  max-width: 320px;
-  line-height: 1.7;
-}
-
-.btn {
-  margin-top: 4px;
-  background: $accent;
-  color: #0a0d10;
-  border: none;
-  padding: 9px 18px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  &:hover {
-    background: #86efb5;
+  .desc {
+    font-size: 13px;
+    max-width: 320px;
+    line-height: 1.7;
   }
 }

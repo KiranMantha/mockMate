@@ -12,8 +12,6 @@
   }
   summary {
     list-style: none;
-    background: $surface;
-    height: 46px;
   }
 
   &.dragOver {
@@ -31,33 +29,33 @@
 .groupHeader {
   display: flex;
   align-items: center;
-  padding: 10px 12px;
   gap: 8px;
+  background: $surface;
+  border: 1px solid $border2;
+  height: 46px;
+  padding: 10px 12px;
   cursor: pointer;
   user-select: none;
   outline: none;
   border-radius: $r;
   transition: background 0.15s;
+  color: $t2;
 
   &:hover {
-    background: rgba($white, 0.03);
+    background: $surface2;
+    border-color: $border;
   }
 
   .arrow {
     display: inline-block;
     font-size: 8px;
-    color: $accent;
+    color: $white;
     transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
     // Rotate when <details> is open
     :global(details[open]) & {
       transform: rotate(90deg);
     }
-  }
-
-  .folder {
-    font-size: 14px;
-    filter: grayscale(0.4);
   }
 
   .nameContainer {
@@ -80,7 +78,6 @@
       flex: 1;
       font-size: 13px;
       font-weight: 600;
-      color: $t2;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -91,14 +88,6 @@
     display: flex;
     align-items: center;
     gap: 6px;
-
-    button {
-      background: transparent;
-      outline: none;
-      border: none;
-      padding: 2px;
-      cursor: pointer;
-    }
   }
 }
 
@@ -200,6 +189,7 @@
   .btnCancel {
     background: $surface;
     color: $t1;
+
     &:hover {
       background: $surface2;
     }
@@ -208,6 +198,7 @@
   .btnConfirm {
     background: $red;
     color: $white;
+
     &:hover {
       opacity: 0.9;
     }

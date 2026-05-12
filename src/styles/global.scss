@@ -35,9 +35,9 @@ select,
 textarea {
   background: $surface;
   border: 1px solid $border;
+  color: $t1;
   border-radius: $r;
   padding: 8px 11px;
-  color: $t1;
   font-family: $mono;
   font-size: 12px;
   outline: none;
@@ -47,7 +47,12 @@ textarea {
   @include focus-ring;
 
   &::placeholder {
-    color: $t3;
+    color: rgba($t2, 0.7);
+  }
+
+  &:focus {
+    border-color: $indigo;
+    background: $surface2;
   }
 }
 
@@ -64,7 +69,96 @@ select {
   }
 }
 
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: $surface;
+  color: $t2;
+  border: 1px solid $border;
+  padding: 9px 13px;
+  border-radius: $r;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: $surface2;
+    color: $t1;
+  }
+
+  &[data-variant='inverted'] {
+    background: $accent;
+    color: $t4;
+
+    &:hover {
+      background: $bg-active;
+      color: $t4;
+    }
+  }
+  &[data-variant='danger-outline'] {
+    color: $red;
+    border-color: rgba($red, 0.3);
+
+    &:hover {
+      color: $red;
+      background: rgba($red, 0.08);
+      border-color: rgba($red, 0.5);
+    }
+  }
+}
+
 textarea {
   resize: vertical;
   line-height: 1.6;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.1s;
+  background: transparent;
+  outline: none;
+
+  &--default {
+    background: $surface;
+    border: 1px solid $border;
+    color: $t2;
+  }
+
+  &--save {
+    border: 1px solid rgba($indigo, 0.3);
+    color: $indigo;
+  }
+
+  &--cancel {
+    border: 1px solid rgba($yellow, 0.3);
+    color: $yellow;
+  }
+
+  &--danger {
+    border: 1px solid rgba($red, 0.3);
+    color: $red;
+  }
+}
+
+.hint {
+  font-size: 11px;
+  color: $t2;
+  line-height: 1.5;
+
+  code {
+    background: $surface2;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: $mono;
+    font-size: 10px;
+  }
 }
