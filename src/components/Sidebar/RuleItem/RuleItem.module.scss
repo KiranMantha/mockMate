@@ -75,13 +75,12 @@
   padding: 1px 5px;
   border-radius: 3px;
   text-transform: uppercase;
-  background: rgba($indigo, 0.12);
+  background: $bg;
   color: $indigo;
-  border: 1px solid rgba($indigo, 0.25);
+  border: 1px solid rgba($indigo, 0.8);
 
   &.responseType {
-    background: rgba($accent, 0.08);
     color: $accent;
-    border: 1px solid rgba($accent, 0.2);
+    border: 1px solid rgba($accent, 0.8);
   }
 }
