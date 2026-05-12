@@ -97,35 +97,12 @@
   padding: 10px;
   border-bottom: 1px solid $border2;
   flex-shrink: 0;
-}
 
-.searchWrap {
-  flex: 1;
-  position: relative;
-
-  svg {
-    position: absolute;
-    left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: $t3;
-    pointer-events: none;
-  }
-
-  input {
-    padding-left: 28px;
+  .searchField {
+    width: 100%;
     font-family: $mono;
     font-size: 11.5px;
   }
-}
-
-.btnNew {
-  padding: 0 11px;
-  height: 32px;
-  background: $accent;
-  color: $t4;
-  border: none;
-  white-space: nowrap;
 }
 
 // ── Rule list ─────────────────────────────────────────────────────────────────
@@ -171,9 +148,9 @@
 // ── Footer ────────────────────────────────────────────────────────────────────
 .foot {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   border-top: 1px solid $border;
-  gap: 6px;
+  gap: 8px;
   flex-shrink: 0;
   padding: 9px 8px;
   height: 60px;

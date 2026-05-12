@@ -14,7 +14,6 @@ export const searchQuery = signal<string>('');
 export const selectedRule = computed(() => rules.value.find((r) => r.id === selectedId.value) ?? null);
 
 export const filteredRules = computed(() => {
-  console.log('all rules', rules);
   const query = searchQuery.value.toLowerCase();
   if (!query) return rules.value;
   return rules.value.filter(
@@ -129,4 +128,11 @@ export async function toggleGroup(groupId: string, enabled: boolean): Promise<vo
 
 export async function renameGroup(groupId: string, name: string): Promise<void> {
   await persistGroups(groups.value.map((group) => (group.id === groupId ? { ...group, name } : group)));
+}
+
+export async function resetAll() {
+  await chrome.storage.local.set({ mockRules: [], mockGroups: [] });
+  rules.value = [];
+  groups.value = [];
+  selectedId.value = null;
 }

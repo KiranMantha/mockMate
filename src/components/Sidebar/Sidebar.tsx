@@ -1,4 +1,13 @@
-import { deleteRule, filteredRules, globalEnabled, groups, searchQuery, selectedId, setGlobalEnabled } from '@store';
+import {
+  deleteRule,
+  filteredRules,
+  globalEnabled,
+  groups,
+  resetAll,
+  searchQuery,
+  selectedId,
+  setGlobalEnabled
+} from '@store';
 import { useRef } from 'preact/hooks';
 import { confirm } from '../ConfirmDialog';
 import { Icon } from '../Icon';
@@ -74,21 +83,13 @@ export function Sidebar({ onAddRule, onAddGroup, onMoveRule, onImport, onExport 
       </div>
 
       <div class={styles.toolbar}>
-        <div class={styles.searchWrap}>
-          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={2.5}>
-            <circle cx={11} cy={11} r={8} />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search rules…"
-            value={searchQuery.value}
-            onInput={(e) => (searchQuery.value = (e.target as HTMLInputElement).value)}
-          />
-        </div>
-        {/* <button class={styles.btnNew} onClick={onAddRule}>
-          + New
-        </button> */}
+        <input
+          type="text"
+          placeholder="Search rules…"
+          value={searchQuery.value}
+          className={styles.searchField}
+          onInput={(e) => (searchQuery.value = (e.target as HTMLInputElement).value)}
+        />
         <details class={styles.newDropdown} ref={dropdownRef}>
           <summary class={styles.newDropdownTrigger}>
             <Icon name="plus" />
@@ -169,8 +170,7 @@ export function Sidebar({ onAddRule, onAddGroup, onMoveRule, onImport, onExport 
               'Clear all rules?',
               'This will permanently delete all rules and groups. This cannot be undone.',
               async () => {
-                await chrome.storage.local.set({ mockRules: [], mockGroups: [] });
-                selectedId.value = null;
+                resetAll();
                 showToast('🗑️ All rules cleared');
               }
             )

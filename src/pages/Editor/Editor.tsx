@@ -20,7 +20,6 @@ const SNIPPETS: [string, string][] = [
     [
       'function modifyResponse(args) {',
       '  const { method, url, requestData, responseJSON } = args;',
-      '  console.log("method:", method, "url:", url);',
       '  return { echoed: requestData, url, method, ts: Date.now() };',
       '}'
     ].join('\n')
@@ -75,63 +74,6 @@ const SNIPPETS: [string, string][] = [
   ]
 ];
 
-// Mock args object used when running the script live in the editor —
-// mirrors the shape passed to modifyResponse(args) at runtime
-const MOCK_ARGS = {
-  method: 'GET',
-  url: 'https://api.example.com/mock',
-  response: '[{"id":1,"name":"Mock User"}]',
-  responseType: 'json',
-  requestHeaders: { 'content-type': 'application/json' },
-  requestData: null,
-  responseJSON: [{ id: 1, name: 'Mock User' }]
-};
-
-type LogLevel = 'log' | 'warn' | 'error' | 'info';
-
-interface LogEntry {
-  level: LogLevel;
-  args: string;
-}
-
-interface RunResult {
-  returnValue: string | null;
-  logs: LogEntry[];
-  error: string | null;
-}
-
-// Runs the dynamic code with a sandboxed console, returns logs + return value
-function runDynamic(code: string): RunResult {
-  const logs: LogEntry[] = [];
-
-  const sandboxedConsole = (['log', 'warn', 'error', 'info'] as LogLevel[]).reduce(
-    (acc, level) => {
-      acc[level] = (...args: unknown[]) => {
-        logs.push({
-          level,
-          args: args.map((a) => (typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a))).join(' ')
-        });
-      };
-      return acc;
-    },
-    {} as Record<LogLevel, (...args: unknown[]) => void>
-  );
-
-  try {
-    // Wrap the user code so modifyResponse is defined, then call it with MOCK_ARGS
-    // eslint-disable-next-line no-new-func
-    const fn = new Function('args', 'console', code + '\n; return modifyResponse(args);');
-    const result = fn(MOCK_ARGS, sandboxedConsole);
-    return {
-      returnValue: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
-      logs,
-      error: null
-    };
-  } catch (e: any) {
-    return { returnValue: null, logs, error: e.message };
-  }
-}
-
 // ── Editor ────────────────────────────────────────────────────────────────────
 interface Props {
   rule: MockRule;
@@ -143,19 +85,10 @@ export function Editor({ rule, onSave }: Props) {
   const activeTab = useSignal<ResponseType>(rule.responseType ?? 'static');
   const dirty = useSignal(false);
 
-  // Live console output — re-computed every time dynamic code changes
-  const consoleResult = useSignal<RunResult>({ returnValue: null, logs: [], error: null });
-
   useEffect(() => {
     form.value = { ...rule };
     activeTab.value = rule.responseType ?? 'static';
     dirty.value = false;
-    // Run once on load if dynamic
-    if ((rule.responseType === 'dynamic' || rule.dynamicCode?.trim()) && rule.dynamicCode?.trim()) {
-      consoleResult.value = runDynamic(rule.dynamicCode);
-    } else {
-      consoleResult.value = { returnValue: null, logs: [], error: null };
-    }
   }, [rule]);
 
   useEffect(() => {
@@ -172,11 +105,6 @@ export function Editor({ rule, onSave }: Props) {
   const set = (patch: Partial<MockRule>) => {
     form.value = { ...form.value, ...patch };
     dirty.value = true;
-    // Re-run dynamic code live whenever it changes
-    if ('dynamicCode' in patch) {
-      const code = (patch.dynamicCode ?? '').trim();
-      consoleResult.value = code ? runDynamic(code) : { returnValue: null, logs: [], error: null };
-    }
   };
 
   const switchTab = (tab: ResponseType) => {
@@ -184,7 +112,6 @@ export function Editor({ rule, onSave }: Props) {
     dirty.value = true;
     if (tab === 'dynamic' && !form.value.dynamicCode?.trim()) {
       form.value = { ...form.value, dynamicCode: DEFAULT_TEMPLATE };
-      consoleResult.value = runDynamic(DEFAULT_TEMPLATE);
     }
   };
 
