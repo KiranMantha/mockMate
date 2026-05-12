@@ -35,7 +35,7 @@ export function ConfirmDialog() {
         <p>{state.value?.msg}</p>
         <div class={styles.actions}>
           <button onClick={handleNo}>Cancel</button>
-          <button data-variant="danger-outline" onClick={handleYes}>
+          <button data-variant="danger" onClick={handleYes}>
             Delete
           </button>
         </div>

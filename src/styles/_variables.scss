@@ -1,21 +1,13 @@
 // Colors
 $white: #fff;
-
-// Level 1: Sidebar — darkest
-$bg: #0a0a0a;
-$sidebar: #0a0a0a;
 $bg-active: #6ee7b7;
 
-// Level 2: Main panel — visible step up from sidebar
-$panel: #161616;
-
-// Level 3: Cards, inputs, surfaces — clearly lifted from panel
-$surface: #222222; // inputs, rule cards, code blocks
-$surface2: #2e2e2e; // hover, active states
-
-// Borders — must be visible against all surface levels
-$border: #3d3d3d; // up from #333 — now actually visible
-$border2: #262626; // subtle section dividers
+$bg: #1a1a1a; // sidebar
+$panel: #212121; // main editor  +7
+$surface: #282828; // cards, inputs +7
+$surface2: #2f2f2f; // hover, active +7
+$border: #363636; // borders       +7
+$border2: #3d3d3d; // borders       +7
 
 // Accents
 $accent: #6ee7b7;

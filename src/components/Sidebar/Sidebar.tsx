@@ -163,7 +163,7 @@ export function Sidebar({ onAddRule, onAddGroup, onMoveRule, onImport, onExport 
           <Icon name="download" /> Export
         </button>
         <button
-          data-variant="danger-outline"
+          data-variant="danger"
           onClick={() =>
             confirm(
               'Clear all rules?',

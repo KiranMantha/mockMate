@@ -35,7 +35,7 @@ export function Topbar({ rule, savedTitle, savedSub, onToggleEnabled, onDelete }
           <span class={styles.toggleLabel}>{rule.enabled ? 'Enabled' : 'Disabled'}</span>
           <Toggle small checked={rule.enabled} onChange={onToggleEnabled} />
         </div>
-        <button data-variant="danger-outline" onClick={onDelete}>
+        <button data-variant="danger" onClick={onDelete}>
           <Icon name="delete" /> Delete
         </button>
       </div>

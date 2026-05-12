@@ -1,7 +1,7 @@
 @use '@/styles/variables' as *;
 
 .sidebar {
-  background: $sidebar;
+  background: $panel;
   border-right: 1px solid $border;
   display: flex;
   flex-direction: column;
@@ -176,6 +176,7 @@
   gap: 6px;
   flex-shrink: 0;
   padding: 9px 8px;
+  height: 60px;
 
   button {
     flex: 1;

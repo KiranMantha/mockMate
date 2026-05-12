@@ -125,7 +125,7 @@ export function RuleGroupItem({ group, children }: RuleGroupItemProps) {
               </>
             ) : (
               <>
-                <IconButton type="button" className={'default'} onClick={startEditing} title="Rename">
+                <IconButton type="button" onClick={startEditing} title="Rename">
                   <Icon name="edit" size={14} />
                 </IconButton>
                 <IconButton
