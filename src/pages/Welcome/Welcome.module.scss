@@ -22,21 +22,4 @@
     max-width: 320px;
     line-height: 1.7;
   }
-
-  .btn {
-    margin-top: 4px;
-    background: $accent;
-    color: #0a0d10;
-    border: none;
-    padding: 9px 18px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.15s;
-
-    &:hover {
-      background: #86efb5;
-    }
-  }
 }

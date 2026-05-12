@@ -26,15 +26,16 @@ export function ConfirmDialog() {
   };
 
   return (
-    <div class={`${styles.overlay} ${open ? styles.open : ''}`} onClick={(e) => e.target === e.currentTarget && handleNo()}>
+    <div
+      class={`${styles.overlay} ${open ? styles.open : ''}`}
+      onClick={(e) => e.target === e.currentTarget && handleNo()}
+    >
       <div class={styles.box}>
         <h3>{state.value?.title}</h3>
         <p>{state.value?.msg}</p>
         <div class={styles.actions}>
-          <button class={styles.btnCancel} onClick={handleNo}>
-            Cancel
-          </button>
-          <button class={styles.btnDelete} onClick={handleYes}>
+          <button onClick={handleNo}>Cancel</button>
+          <button data-variant="danger-outline" onClick={handleYes}>
             Delete
           </button>
         </div>

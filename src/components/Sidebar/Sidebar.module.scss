@@ -14,8 +14,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 1px solid $border2;
+  border-bottom: 1px solid $border;
   flex-shrink: 0;
+  height: 62px;
 }
 
 .logo {
@@ -119,24 +120,12 @@
 }
 
 .btnNew {
-  display: flex;
-  align-items: center;
-  gap: 4px;
   padding: 0 11px;
   height: 32px;
   background: $accent;
-  color: #0a0d10;
+  color: $t4;
   border: none;
-  border-radius: $r;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s;
-
-  &:hover {
-    background: #86efb5;
-  }
 }
 
 // ── Rule list ─────────────────────────────────────────────────────────────────
@@ -181,39 +170,15 @@
 
 // ── Footer ────────────────────────────────────────────────────────────────────
 .foot {
-  padding: 8px;
-  border-top: 1px solid $border2;
   display: flex;
+  align-items: stretch;
+  border-top: 1px solid $border;
   gap: 6px;
   flex-shrink: 0;
-}
+  padding: 9px 8px;
 
-.btnFooter {
-  flex: 1;
-  padding: 6px 0;
-  background: $surface;
-  border: 1px solid $border;
-  border-radius: $r;
-  font-size: 11px;
-  font-weight: 600;
-  color: $t2;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.12s;
-
-  &:hover {
-    background: $surface2;
-    color: $t1;
-  }
-}
-
-.btnDanger {
-  color: $red;
-  border-color: rgba($red, 0.3);
-
-  &:hover {
-    background: rgba($red, 0.08);
-    border-color: rgba($red, 0.5);
+  button {
+    flex: 1;
   }
 }
 

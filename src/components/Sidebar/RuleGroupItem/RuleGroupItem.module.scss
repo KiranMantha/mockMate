@@ -12,8 +12,6 @@
   }
   summary {
     list-style: none;
-    background: $surface;
-    height: 46px;
   }
 
   &.dragOver {
@@ -31,8 +29,11 @@
 .groupHeader {
   display: flex;
   align-items: center;
-  padding: 10px 12px;
   gap: 8px;
+  background: $surface;
+  border: 1px solid $border2;
+  height: 46px;
+  padding: 10px 12px;
   cursor: pointer;
   user-select: none;
   outline: none;
@@ -41,13 +42,14 @@
   color: $t2;
 
   &:hover {
-    background: rgba($white, 0.03);
+    background: $surface2;
+    border-color: $border;
   }
 
   .arrow {
     display: inline-block;
     font-size: 8px;
-    color: $accent;
+    color: $white;
     transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
     // Rotate when <details> is open
@@ -187,6 +189,7 @@
   .btnCancel {
     background: $surface;
     color: $t1;
+
     &:hover {
       background: $surface2;
     }
@@ -195,6 +198,7 @@
   .btnConfirm {
     background: $red;
     color: $white;
+
     &:hover {
       opacity: 0.9;
     }

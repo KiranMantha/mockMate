@@ -13,7 +13,7 @@ export function Welcome({ onAddRule }: Props) {
         Create a rule to intercept any REST or GraphQL request and return a custom response — without touching your
         backend.
       </p>
-      <button class={styles.btn} onClick={onAddRule}>
+      <button data-variant="inverted" onClick={onAddRule}>
         <Icon name="plus" /> New Rule
       </button>
     </div>

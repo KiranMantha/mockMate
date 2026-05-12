@@ -156,17 +156,14 @@ export function Sidebar({ onAddRule, onAddGroup, onMoveRule, onImport, onExport 
       </div>
 
       <div class={styles.foot}>
-        <button class={styles.btnFooter} onClick={onImport}>
+        <button onClick={onImport}>
           <Icon name="upload" /> Import
         </button>
-        <button class={styles.btnFooter} onClick={onExport}>
+        <button onClick={onExport}>
           <Icon name="download" /> Export
         </button>
-        {/* <button class={styles.btnFooter} onClick={() => onAddGroup()}>
-          + New Group
-        </button> */}
         <button
-          class={`${styles.btnFooter} ${styles.btnDanger}`}
+          data-variant="danger-outline"
           onClick={() =>
             confirm(
               'Clear all rules?',

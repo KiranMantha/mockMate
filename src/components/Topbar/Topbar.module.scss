@@ -6,9 +6,9 @@
   justify-content: space-between;
   padding: 12px 24px;
   border-bottom: 1px solid $border;
-  background: $panel;
   flex-shrink: 0;
   gap: 12px;
+  height: 62px;
 }
 
 .left {
@@ -41,7 +41,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
+  padding: 9px 13px;
   background: rgba($accent, 0.06);
   border: 1px solid rgba($accent, 0.4);
   border-radius: $r;
@@ -53,21 +53,5 @@
     font-weight: 600;
     color: $accent;
     transition: color 0.15s;
-  }
-}
-
-.btnDelete {
-  background: transparent;
-  color: $red;
-  border: 1px solid rgba($red, 0.3);
-  padding: 7px 13px;
-  border-radius: $r;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-
-  &:hover {
-    background: rgba($red, 0.08);
   }
 }
